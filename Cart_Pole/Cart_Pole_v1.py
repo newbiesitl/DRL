@@ -1,6 +1,6 @@
 #
 #
-# DOES NOT WORK CURRENTLY!
+# WORKS! BUT IS SLOW AS HELL!
 #
 #
 import tensorflow as tf
@@ -9,13 +9,16 @@ import numpy as np
 import gym
 
 def main():
-    env = gym.make("CartPole-v0")
-    obs = env.reset()
+    env = gym.make('CartPole-v0')
+    env = gym.wrappers.Monitor(env, 'cartpole', force=True)
+
+
     env.render()
     print(env.action_space)
-    action = 1  # accelerate right
-    obs, reward, done, info = env.step(action)
-    print(obs, reward, done, info)
+    #action = 1  # accelerate right
+    obs = env.reset()
+    #obs, reward, done, info = env.step(action)
+    #print(obs, reward, done, info)
 
     # classical
     if 0:
