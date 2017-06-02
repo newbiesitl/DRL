@@ -15,10 +15,7 @@ def main():
 
     env.render()
     print(env.action_space)
-    #action = 1  # accelerate right
     obs = env.reset()
-    #obs, reward, done, info = env.step(action)
-    #print(obs, reward, done, info)
 
     # classical
     if 0:
