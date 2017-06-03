@@ -3,7 +3,7 @@ import numpy
 import matplotlib.pyplot as plt
 from pandas import read_csv
 import math
-from keras.models import Sequential
+from keras.models import Sequential, Model
 from keras.layers import Dense
 from keras.layers import LSTM
 from sklearn.preprocessing import MinMaxScaler
