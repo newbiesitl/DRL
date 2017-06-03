@@ -19,10 +19,12 @@ for i_episode in range(20):
     env.reset()
     for t in range(100):
         env.render()
-        # print(observation)
         agent_1.act(observation)
         action = env.action_space.sample()
+        print(observation, action)
         observation, reward, done, info = env.step(action)
+        print(observation, reward, done, info)
+        exit()
         agent_1.learn(env)
         if done:
             print(reward)
