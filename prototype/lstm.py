@@ -8,13 +8,18 @@ timesteps = 2
 num_classes = 2
 train_samples = 1000
 test_samples = 100
+# set the sample_weights for each training sample
+sample_weights = np.array([-1 for _ in range(train_samples)])
+
+# each training sample is a 2-timestamp sequence
 x_train = [[[1,1], [1,2]] for _ in range(train_samples)]
+# label is the label from the input sequence
+# in this setting, we don't need to output the sequence, because we are not going to re-use the sequence for another prediction
 y_train = [[0,1] for _ in range(train_samples)]
+# pad them
 x_train = pad_sequences(x_train, maxlen=timesteps, padding='pre')
 y_train = pad_sequences(y_train)
-# x_train = np.array(x_train).reshape((2, timesteps, data_dim))
 
-# exit()
 x_val = [[[1,1], [1,2]] for _ in range(test_samples)]
 y_val = [[0,1] for _ in range(test_samples)]
 
@@ -31,13 +36,17 @@ model.add(Dense(num_classes, activation='softmax'))
 
 model.compile(loss='categorical_crossentropy',
               optimizer='rmsprop',
-              metrics=['accuracy'])
+              metrics=['accuracy'],
+              # sample_weight_mode='temporal'
+              )
 
 
 
 model.fit(x_train, y_train,
           batch_size=64, epochs=5,
-          validation_data=(x_val, y_val))
+          validation_data=(x_val, y_val),
+          sample_weight=sample_weights
+          )
 
 question = np.array([[[1,1], [1,2]]])
 question = pad_sequences(question, maxlen=timesteps, padding='pre')
