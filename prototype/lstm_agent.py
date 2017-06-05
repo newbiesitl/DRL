@@ -6,19 +6,36 @@ Plan:
 '''
 
 from keras.models import Sequential
+from keras.losses import binary_crossentropy
 import copy
 from keras.layers import LSTM, Dense
 from keras.preprocessing.sequence import pad_sequences
 import numpy as np
 
 
-class LSTMAgent(object):
-    def __init__(self, data_dim, timesteps, action_space):
-        self.action_space =action_space
-        self.data_dim = data_dim
-        self.timesteps = timesteps
-        self.memory = pad_sequences([], maxlen=self.timesteps, padding='pre')
+'''
+I think this is ready to go now,
+Check list:
+1. `learn()` method to learn from observation, action and reward (DONE)
+2. `act()` method to suggest an action from observation (DONE)
+3. agent manage the memory by itself, just need to pass `done` flag to `act()` and `learn()` (DONE)
+4. implement the rollout logic to collect final results, train the again with episode and discounted reward
+4.1 use agent act in the rollout
 
+
+
+
+PROBLEM
+How I update the model is wrong, I use model to predict rewards from (s,a) when the final reward is negative rewards, I need to update the model to not suggest the same action.
+What I'm doing right now is when the result is bad, i just penalize the Q function to adjust the global reward estimation, this doesn't change the action suggestion behaviour.
+'''
+
+class LSTMAgent(object):
+    def __init__(self, observation_space, action_space, timesteps):
+        self.action_space = [0 for _ in range(action_space.n)]
+        self.data_dim = int(observation_space.shape[0]+action_space.n)
+        self.timesteps = timesteps
+        self.memory = pad_sequences([[[0 for _ in range(self.data_dim)]]], maxlen=self.timesteps, padding='pre')[0]
         # this Q function predict accumulative reward from state and action Q(s,a)
         # regression model output unbounded / normalized score
         # expected input data shape: (batch_size, timesteps, data_dim)
@@ -30,7 +47,7 @@ class LSTMAgent(object):
         # model.add(LSTM(num_classes, return_sequences=True, activation='softmax'))  # return a single vector of dimension 32
         self.model.add(Dense(1, activation='linear'))
 
-        self.model.compile(loss='categorical_crossentropy',
+        self.model.compile(loss='mean_absolute_error',
                           optimizer='rmsprop',
                           metrics=['accuracy'],
                           # sample_weight_mode='temporal'
@@ -50,36 +67,85 @@ class LSTMAgent(object):
         :return:
         '''
 
-        Y = reward
-        X = self.get_SA(observation, action)
+        Y = np.array([reward])
+        this_action = self.action_space
+        this_action[action] = 1
+        X = self._get_SA(observation, this_action)
         seq = copy.deepcopy(self.memory)
-        seq.append(X)
-        seq.pop(0)
-        sample_weights = reward
-        X = seq
-        self.model.fit([X], [Y],
+        seq = np.concatenate((seq, [X]))
+        seq = np.delete(seq, 0, axis=0)  # pop the first from memory
+        X = np.array([seq])
+        sample_weights = np.array([reward for _ in range(len(X))])
+
+        self.model.fit(X, Y,
                       batch_size=batch_size, epochs=epochs,
-                      validation_data=([X], [Y]),
+                      validation_data=(X, Y),
                       sample_weight=sample_weights
                       )
         if done:
-            self.memory = pad_sequences([], maxlen=self.timesteps, padding='pre')
+            self.memory = pad_sequences([[[0 for _ in range(self.data_dim)]]], maxlen=self.timesteps, padding='pre')[0]
 
-    def get_SA(self, observation, action):
+    def _get_SA(self, observation, action):
         return np.append(observation, action)
+
+    def _get_action_onehot(self, idx):
+        ret = self.action_space[:]
+        ret[idx] = 1
+        return ret
 
     def act(self, observation, done=None):
         # argmaxQ(s,a) here, select a with largest final result
-        sa_pairs = [self.get_SA(observation, action) for action in self.action_space]
-        seqs=[]
+        sa_pairs = []
+        for action_index in range(len(self.action_space)):
+            sa_pairs.append(self._get_SA(observation, self._get_action_onehot(action_index)))
+        rewards = []
         for sa in sa_pairs:
             seq = copy.deepcopy(self.memory)
-            seq.append(sa)
-            seq.pop(0)
-            seqs.append(seq)
-        rewards = self.model.predict(seqs)
-        action = self.action_space[np.argmax(rewards)]
+            seq = np.concatenate((seq, [sa]))
+            seq = np.delete(seq, 0, axis=0) # pop the first from memory
+            seq = np.array([seq])
+            print(seq)
+            rewards.append(self.model.predict(seq))
+        self.update_memory(observation, self._get_action_onehot(np.argmax(rewards)))
+        action = np.argmax(rewards)
+        print(action)
         if done:
-            self.memory = pad_sequences([], maxlen=self.timesteps, padding='pre')
+            self.memory = pad_sequences([[[0 for _ in range(self.data_dim)]]], maxlen=self.timesteps, padding='pre')[0]
         return action
 
+    def update_memory(self, observation,action):
+        sa = self._get_SA(observation, action)
+        self.memory = np.concatenate((self.memory, [sa]))
+        self.memory = np.delete(self.memory, 0, 0)
+
+    def roll_out(self, env, num_episode, epsilon=0.01, learn=True, greedy=False):
+        '''
+        Learn from roll_out, no need to return episodes now, for saving memory
+        :param env:
+        :param num_episode:
+        :param epsilon:
+        :param learn:
+        :return:
+        '''
+        for episode in range(num_episode):
+            observation = env.reset()
+            env.reset()
+            for t in range(1000):
+                env.render()
+                action = self.act(observation)
+                if np.random.uniform(0,1) < episode:
+                    action = self.action_space[np.random.randint(0, len(self.action_space)-1)]
+                # print(observation, type(observation), action, type(action))
+                observation, reward, done, info = env.step(action)
+                # print(observation, type(observation), action, type(action), reward, type(reward), done, info)
+                if greedy and learn:
+                    self.learn(observation,action, reward)
+                elif (not greedy) and learn:
+                    if done:
+                        self.learn(observation,action, reward)
+                    else:
+                        self.update_memory(observation, self._get_action_onehot(action))
+                if done:
+                    print(reward)
+                    print("Episode finished after {} timesteps".format(t + 1))
+                    break
