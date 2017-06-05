@@ -28,6 +28,9 @@ Check list:
 PROBLEM
 How I update the model is wrong, I use model to predict rewards from (s,a) when the final reward is negative rewards, I need to update the model to not suggest the same action.
 What I'm doing right now is when the result is bad, i just penalize the Q function to adjust the global reward estimation, this doesn't change the action suggestion behaviour.
+SOLUTION
+The problem is I'm not tracing decision make process, for parameter update, I should only update the labels that output the wrong values, for example, in this case I use argmax to retrieve the suggested action, if the outcome is negative, I should only update the predicted classes with discount factors.
+
 '''
 
 class LSTMAgent(object):
