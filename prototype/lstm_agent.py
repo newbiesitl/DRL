@@ -29,8 +29,9 @@ PROBLEM
 How I update the model is wrong, I use model to predict rewards from (s,a) when the final reward is negative rewards, I need to update the model to not suggest the same action.
 What I'm doing right now is when the result is bad, i just penalize the Q function to adjust the global reward estimation, this doesn't change the action suggestion behaviour.
 SOLUTION
-The problem is I'm not tracing decision make process, for parameter update, I should only update the labels that output the wrong values, for example, in this case I use argmax to retrieve the suggested action, if the outcome is negative, I should only update the predicted classes with discount factors.
 
+1. The problem is I'm not tracing decision make process, for parameter update, I should only update the labels that output the wrong values, for example, in this case I use argmax to retrieve the suggested action, if the outcome is negative, I should only update the predicted classes with discount factors.
+2. Once episode finish, create n sub sequences from sequence and train LSTM with subsequences, for example, if episode last 10 steps, train to predict the final value with sequential order of any sub sequences from 10 steps, such as, predict value from 1st step, predict value from 1-5th steps, predict value from 1-9 steps, predict value from 1,2,6,8 (chronological order) steps
 '''
 
 class LSTMAgent(object):
