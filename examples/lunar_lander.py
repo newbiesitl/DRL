@@ -17,13 +17,15 @@ agent_1 = agent_pool['RandomAgent'](env.observation_space, env.action_space)
 for i_episode in range(20):
     observation = env.reset()
     env.reset()
+    print(env.action_space)
+    exit()
     for t in range(100):
         env.render()
         agent_1.act(observation)
         action = env.action_space.sample()
-        print(observation, action)
+        print(observation, type(observation), action, type(action))
         observation, reward, done, info = env.step(action)
-        print(observation, reward, done, info)
+        print(observation, type(observation), action, type(action), reward, type(reward), done, info)
         exit()
         agent_1.learn(env)
         if done:
