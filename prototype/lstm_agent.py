@@ -134,22 +134,31 @@ class LSTMAgent(object):
         for episode in range(num_episode):
             observation = env.reset()
             env.reset()
+            episodes = []
             for t in range(1000):
                 env.render()
                 action = self.act(observation)
+                pre_observation = observation
                 if np.random.uniform(0,1) < episode:
                     action = self.action_space[np.random.randint(0, len(self.action_space)-1)]
                 # print(observation, type(observation), action, type(action))
                 observation, reward, done, info = env.step(action)
-                # print(observation, type(observation), action, type(action), reward, type(reward), done, info)
-                if greedy and learn:
-                    self.learn(observation,action, reward)
-                elif (not greedy) and learn:
-                    if done:
-                        self.learn(observation,action, reward)
-                    else:
-                        self.update_memory(observation, self._get_action_onehot(action))
+
+
+                # what i'm doing here is to store the episode until the end
+                # when episode finish update the model with entire episode with eligibility trace and discount
+                episodes.append([pre_observation, action, reward])
+                self.update_memory(pre_observation, self._get_action_onehot(action))
+
+                # if greedy and learn:
+                #     self.learn(observation,action, reward)
+                # elif (not greedy) and learn:
+                #     if done:
+                #         self.learn(observation,action, reward)
+                #     else:
+                #         self.update_memory(observation, self._get_action_onehot(action))
                 if done:
+                    # final training after end of episode
                     print(reward)
                     print("Episode finished after {} timesteps".format(t + 1))
                     break
