@@ -7,6 +7,7 @@ Plan:
 
 from keras.models import Sequential
 from keras.losses import binary_crossentropy
+from keras import metrics
 import copy
 from keras.layers import LSTM, Dense
 from keras.preprocessing.sequence import pad_sequences
@@ -14,28 +15,14 @@ import numpy as np
 
 
 '''
-I think this is ready to go now,
-Check list:
-1. `learn()` method to learn from observation, action and reward (DONE)
-2. `act()` method to suggest an action from observation (DONE)
-3. agent manage the memory by itself, just need to pass `done` flag to `act()` and `learn()` (DONE)
-4. implement the rollout logic to collect final results, train the again with episode and discounted reward
-4.1 use agent act in the rollout
+This is Q-Learning, we don't need off policy update, there's no approximation here, we are doing exhaustive search over action space
 
-
-
-
-PROBLEM
-How I update the model is wrong, I use model to predict rewards from (s,a) when the final reward is negative rewards, I need to update the model to not suggest the same action.
-What I'm doing right now is when the result is bad, i just penalize the Q function to adjust the global reward estimation, this doesn't change the action suggestion behaviour.
-SOLUTION
-
-1. The problem is I'm not tracing decision make process, for parameter update, I should only update the labels that output the wrong values, for example, in this case I use argmax to retrieve the suggested action, if the outcome is negative, I should only update the predicted classes with discount factors.
-2. Once episode finish, create n sub sequences from sequence and train LSTM with subsequences, for example, if episode last 10 steps, train to predict the final value with sequential order of any sub sequences from 10 steps, such as, predict value from 1st step, predict value from 1-5th steps, predict value from 1-9 steps, predict value from 1,2,6,8 (chronological order) steps
+TODO @charles
+Add discount factor to it
 '''
 
 class LSTMAgent(object):
-    def __init__(self, observation_space, action_space, timesteps):
+    def __init__(self, observation_space, action_space, timesteps, discount_factor=1):
         self.action_space = [0 for _ in range(action_space.n)]
         self.data_dim = int(observation_space.shape[0]+action_space.n)
         self.timesteps = timesteps
@@ -50,10 +37,10 @@ class LSTMAgent(object):
         self.model.add(LSTM(32, return_sequences=False))  # return a single vector of dimension 32
         # model.add(LSTM(num_classes, return_sequences=True, activation='softmax'))  # return a single vector of dimension 32
         self.model.add(Dense(1, activation='linear'))
-
-        self.model.compile(loss='mean_absolute_percentage_error',
+        self.discount = discount_factor
+        self.model.compile(loss='mean_absolute_error',
                           optimizer='adam',
-                          metrics=['accuracy'],
+                          metrics=['mean_absolute_error'],
                           # sample_weight_mode='temporal'
                           )
 
@@ -94,12 +81,22 @@ class LSTMAgent(object):
             x_test = np.array(X[divider:])
             y_test = np.array(Y[divider:])
         # print(x_train.shape)
-        sample_weights = np.array([reward for _ in range(len(x_train))])
+        # apply discount here
+        sample_weights = []
 
+        tmp = []
+        for i in range(len(sample_weights)):
+            tmp.append(sample_weights[i] * y_train[i])
+        print('discount rewards', tmp)
+        acc = 1
+        for _ in range(len(x_train)):
+            sample_weights.insert(0, acc)
+            acc *= self.discount
+        sample_weights = np.array(sample_weights)
         self.model.fit(x_train, y_train,
                        batch_size=batch_size, epochs=epochs,
                        validation_data=(x_test, y_test),
-                       # sample_weight=sample_weights
+                       sample_weight=sample_weights
                        )
 
 
@@ -151,7 +148,7 @@ class LSTMAgent(object):
         self.memory = np.concatenate((self.memory, [sa]))
         self.memory = np.delete(self.memory, 0, 0)
 
-    def roll_out(self, env, num_episode, epsilon=0.1, learn=True, greedy=False):
+    def roll_out(self, env, num_episode, epsilon=0.1, discount=1, greedy=False):
         '''
         Learn from roll_out, no need to return episodes now, for saving memory
         :param env:
@@ -160,6 +157,7 @@ class LSTMAgent(object):
         :param learn:
         :return:
         '''
+        self.discount = discount
         episode = 0
         reset = True if num_episode is None else False
         num_episode = num_episode if num_episode is not None else 100
@@ -206,7 +204,7 @@ class LSTMAgent(object):
                         # use final rewards as label
                         rewards = [rewards[-1] for _ in range(len(rewards))]
                     print('actions', action_history)
-                    self.learn(episodes, rewards, 1, 1)
+                    self.learn(episodes, rewards, 2, 5)
                     print(reward)
                     print("Episode finished after {} timesteps".format(t + 1))
                     break
