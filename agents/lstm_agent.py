@@ -21,6 +21,7 @@ This is Q-Learning, we don't need off policy update, there's no approximation he
 TODO @charles
 1. Save/Load
 2. adaptive
+3. Have more epoch for positive final results, try to "over-fit" the final positive rewards
 '''
 
 class LSTMAgent(object):
@@ -48,7 +49,7 @@ class LSTMAgent(object):
                           )
         self.train_all = True
 
-    def learn(self, seq, rewards, batch_size=1, epochs=2, ratio=0.8,):
+    def learn(self, seq, rewards, batch_size=1, epoch=2, ratio=0.8, ):
         # for non-greedy, use the final rewards for the entire sequence
         # for greedy, use current reword for each time step in seq
         memory = pad_sequences([[[0 for _ in range(self.data_dim)]]], maxlen=self.timesteps, padding='pre')[0]
@@ -111,12 +112,12 @@ class LSTMAgent(object):
             X = np.array(X)
             Y = np.array(Y)
             self.model.fit(X, Y,
-                           batch_size=batch_size, epochs=epochs,
+                           batch_size=batch_size, epochs=epoch,
                            sample_weight=sample_weights
                            )
         else:
             self.model.fit(x_train, y_train,
-                           batch_size=batch_size, epochs=epochs,
+                           batch_size=batch_size, epochs=epoch,
                            validation_data=(x_test, y_test),
                            sample_weight=sample_weights
                            )
@@ -215,7 +216,7 @@ class LSTMAgent(object):
                     else:
                         raise Exception('unknown mode {1}, supported mode are {0}'.format(' '.join(['global', 'greedy', 'heuristic']), mode))
                     print('actions', action_history)
-                    self.learn(episodes, rewards, batch_size=10, epochs=5)
+                    self.learn(episodes, rewards, batch_size=10, epoch=5)
                     if save_every_epoch:
                         self.save(folder_to_save, self.label)
                     print(reward)
