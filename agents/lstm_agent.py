@@ -216,9 +216,13 @@ class LSTMAgent(object):
                         # use final rewards as label
                         rewards = [rewards[-1] for _ in range(len(rewards))]
                     elif mode == 'heuristic':
-                        rewards = rewards # use heuristic and final result
+                        if rewards[-1] > 0:
+                            # if the termination reward is positive, backpropagate the positive signal all the way to the beginning of the episode
+                            rewards = [(x + rewards[-1]) for x in rewards]
+                        else:
+                            rewards = rewards # use heuristic and final result
                     elif mode == 'greedy':
-                        rewards = [(x+rewards[-1])/2 for x in rewards]
+                        rewards = [(x + rewards[-1]) / 2 for x in rewards]
                     else:
                         raise Exception('unknown mode {1}, supported mode are {0}'.format(' '.join(['global', 'greedy', 'heuristic']), mode))
                     print('actions', action_history)
