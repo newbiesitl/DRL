@@ -25,7 +25,7 @@ TODO @charles
 '''
 
 class LSTMAgent(object):
-    def __init__(self, observation_space, action_space, timesteps, label, hidden_dim=32, discount_factor=1):
+    def __init__(self, observation_space, action_space, timesteps, label, hidden_dim=32, discount_factor=1, loss_function='mean_absolute_error'):
         self.action_space = [0 for _ in range(action_space.n)]
         self.data_dim = int(observation_space.shape[0]+action_space.n)
         self.timesteps = timesteps
@@ -42,11 +42,13 @@ class LSTMAgent(object):
         # model.add(LSTM(num_classes, return_sequences=True, activation='softmax'))  # return a single vector of dimension 32
         self.model.add(Dense(1, activation='linear'))
         self.discount = discount_factor
-        self.model.compile(loss='mean_absolute_error',
+        self.loss_function = loss_function
+        self.model.compile(loss=self.loss_function,
                           optimizer='adam',
-                          metrics=['mean_absolute_error'],
+                          metrics=[self.loss_function],
                           # sample_weight_mode='temporal'
                           )
+
         self.train_all = True
 
     def learn(self, seq, rewards, batch_size=1, epoch=2, ratio=0.8, ):
@@ -158,7 +160,7 @@ class LSTMAgent(object):
         self.memory = np.concatenate((self.memory, [sa]))
         self.memory = np.delete(self.memory, 0, 0)
 
-    def roll_out(self, env, num_episode, epsilon=0.01, discount=1, mode='greedy', save_every_epoch=False, folder_to_save='.', train_all=False):
+    def roll_out(self, env, num_episode, epsilon=0.01, discount=1, mode='greedy', save_every_epoch=False, folder_to_save='.', train_all=False, load_saved_model=True):
         '''
 
         :param env:  env object
@@ -172,6 +174,8 @@ class LSTMAgent(object):
         :save_every_epoch: whether save current mode after each epoch
         :return:
         '''
+        if load_saved_model:
+            self.load(folder_to_save, self.label)
         self.train_all = train_all
         self.discount = discount
         episode = 0
@@ -234,13 +238,17 @@ class LSTMAgent(object):
         self.model.load_weights(weights_file)  # load model weights
         self.model_input_shape = self.model.input_shape  # set input shape from loaded model
         self.model_output_shape = self.model.output_shape  # set output shape from loaded model
-
+        self.model.compile(loss=self.loss_function,
+                          optimizer='adam',
+                          metrics=[self.loss_function],
+                          # sample_weight_mode='temporal'
+                          )
 
 
 
     def save(self, folder_path, model_name):
-        arch_file = os.path.join(folder_path, '.'.join(['_'.join([model_name, 'encoder', 'arch']), 'json']))
-        weights_file = os.path.join(folder_path, '.'.join(['_'.join([model_name, 'encoder', 'weights']), 'json']))
+        arch_file = os.path.join(folder_path, '.'.join(['_'.join([model_name, 'arch']), 'json']))
+        weights_file = os.path.join(folder_path, '.'.join(['_'.join([model_name, 'weights']), 'json']))
         # Save autoencoder model arch + weights
         with open(arch_file, "w+") as json_file:
             json_file.write(self.model.to_json())  # arch: json format
