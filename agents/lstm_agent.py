@@ -5,13 +5,14 @@ Plan:
 3. Use rewards to update the weights using sample_weights
 '''
 
-from keras.models import Sequential
+from keras.models import Sequential, model_from_json
 from keras.losses import binary_crossentropy
 from keras import metrics
-import copy
+import copy, os
 from keras.layers import LSTM, Dense
 from keras.preprocessing.sequence import pad_sequences
 import numpy as np
+
 
 
 '''
@@ -23,19 +24,20 @@ TODO @charles
 '''
 
 class LSTMAgent(object):
-    def __init__(self, observation_space, action_space, timesteps, discount_factor=1):
+    def __init__(self, observation_space, action_space, timesteps, label, hidden_dim=32, discount_factor=1):
         self.action_space = [0 for _ in range(action_space.n)]
         self.data_dim = int(observation_space.shape[0]+action_space.n)
         self.timesteps = timesteps
+        self.label = label
         self.memory = pad_sequences([[[0 for _ in range(self.data_dim)]]], maxlen=self.timesteps, padding='pre')[0]
         # this Q function predict accumulative reward from state and action Q(s,a)
         # regression model output unbounded / normalized score
         # expected input data shape: (batch_size, timesteps, data_dim)
         self.model = Sequential()
-        self.model.add(LSTM(32, return_sequences=True,
+        self.model.add(LSTM(hidden_dim, return_sequences=True,
                        input_shape=(self.timesteps, self.data_dim)))  # returns a sequence of vectors of dimension 32
         # model.add(LSTM(32, return_sequences=True))  # returns a sequence of vectors of dimension 32
-        self.model.add(LSTM(32, return_sequences=False))  # return a single vector of dimension 32
+        self.model.add(LSTM(hidden_dim, return_sequences=False))  # return a single vector of dimension 32
         # model.add(LSTM(num_classes, return_sequences=True, activation='softmax'))  # return a single vector of dimension 32
         self.model.add(Dense(1, activation='linear'))
         self.discount = discount_factor
@@ -102,18 +104,6 @@ class LSTMAgent(object):
 
 
     def online_learning(self, observation, action, reward, done=False, batch_size=1, epochs=1):
-        '''
-        train model with (s,a) to Reward mapping
-        actions are stored in self.action_space
-        create X by concatenate env with action
-        use final result as Y
-        :param observation:
-        [ 0.00240507  0.92378398  0.12652748 -0.5739521  -0.00432121 -0.0594537   0. 0. ]
-         <class 'numpy.ndarray'>  -2.17269424478 <class 'numpy.float64'> False {}
-        :param batch_size:
-        :param epochs:
-        :return:
-        '''
         raise NotImplemented()
 
     def _get_SA(self, observation, action):
@@ -149,7 +139,7 @@ class LSTMAgent(object):
         self.memory = np.concatenate((self.memory, [sa]))
         self.memory = np.delete(self.memory, 0, 0)
 
-    def roll_out(self, env, num_episode, epsilon=0.01, discount=1, mode='greedy'):
+    def roll_out(self, env, num_episode, epsilon=0.01, discount=1, mode='greedy', save_every_epoch=False, folder_to_save='.'):
         '''
 
         :param env:  env object
@@ -160,6 +150,7 @@ class LSTMAgent(object):
             `greedy`: use heuristic and final reward
             `global`: only use final reward
             `heuristic`: use heuristic for non termination states, use final reward for termination state
+        :save_every_epoch: whether save current mode after each epoch
         :return:
         '''
         self.discount = discount
@@ -206,6 +197,32 @@ class LSTMAgent(object):
                         raise Exception('unknown mode, supported mode are {0}'.format(' '.join(['global', 'greedy', 'heuristic'])))
                     print('actions', action_history)
                     self.learn(episodes, rewards, batch_size=10, epochs=5)
+                    if save_every_epoch:
+                        self.save(folder_to_save, self.label)
                     print(reward)
                     print("Episode finished after {} timesteps".format(t + 1))
                     break
+
+    def load(self, folder_path, model_name):
+        arch_file = os.path.join(folder_path, '.'.join(['_'.join([model_name, 'arch']), 'json']))
+        weights_file = os.path.join(folder_path, '.'.join(['_'.join([model_name, 'weights']), 'json']))
+        # Load autoencoder architecture + weights + shapes
+        json_file = open(arch_file, 'r')  # read architecture json
+        autoencoder_json = json_file.read()
+        json_file.close()
+        self.model = model_from_json(autoencoder_json)  # convert json -> model architecture
+        self.model.load_weights(weights_file)  # load model weights
+        self.model_input_shape = self.model.input_shape  # set input shape from loaded model
+        self.model_output_shape = self.model.output_shape  # set output shape from loaded model
+
+
+
+
+    def save(self, folder_path, model_name):
+        arch_file = os.path.join(folder_path, '.'.join(['_'.join([model_name, 'encoder', 'arch']), 'json']))
+        weights_file = os.path.join(folder_path, '.'.join(['_'.join([model_name, 'encoder', 'weights']), 'json']))
+        # Save autoencoder model arch + weights
+        with open(arch_file, "w+") as json_file:
+            json_file.write(self.model.to_json())  # arch: json format
+        self.model.save_weights(weights_file)  # weights: hdf5 format
+

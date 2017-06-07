@@ -1,8 +1,13 @@
-import gym
-from benchmark_agent.tabular_q_agent import TabularQAgent
-from benchmark_agent.random_agent import RandomAgent
-from prototype.lstm_agent import LSTMAgent
+import os
 
+import gym
+
+from agents.lstm_agent import LSTMAgent
+from benchmark_agent.random_agent import RandomAgent
+from benchmark_agent.tabular_q_agent import TabularQAgent
+
+cur_dir = os.path.dirname(__file__)
+project_root = os.path.join(cur_dir, '..', )
 
 agent_pool = {
     'TabularQAgent': TabularQAgent,
@@ -16,9 +21,14 @@ env.render()
 # agent_1 = TabularQAgent(env.observation_space, env.action_space)
 # agent_1 = agent_pool['RandomAgent'](env.observation_space, env.action_space)
 print(env.action_space.n)
-agent_1 = agent_pool['LSTMAgent'](env.observation_space, env.action_space, 30)
+mode = 'greedy'
+timesteps = 30
+h_dim = 32
+model_name = '_'.join([mode, str(timesteps), str(h_dim)])
+save_every_epoch = True
+agent_1 = agent_pool['LSTMAgent'](env.observation_space, env.action_space, timesteps=30, hidden_dim=h_dim, label=model_name)
 # None means run forever
-agent_1.roll_out(env, num_episode=None, mode='greedy', discount=0.99)
+agent_1.roll_out(env, num_episode=None, mode=mode, discount=0.99, save_every_epoch=save_every_epoch, folder_to_save='./')
 
 # for i_episode in range(20):
 #     observation = env.reset()

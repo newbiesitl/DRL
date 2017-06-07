@@ -171,6 +171,11 @@ class GreedyEncoder(EmbeddingBase):
     def decode(self, x):
         return self.decoder.predict(x)
 
+    def _noising(self, X, noise_factor):
+        X_noisy = X + noise_factor * np.random.normal(loc=0.0, scale=1.0, size=X.shape)
+        X_noisy = np.clip(X_noisy, 0., 1.)
+        return X_noisy
+
     def load(self, folder_path, model_name):
         encoder_arch_file = os.path.join(folder_path, '.'.join(['_'.join([model_name, 'encoder', 'arch']), 'json']))
         encoder_weights_file = os.path.join(folder_path, '.'.join(['_'.join([model_name, 'encoder', 'weights']), 'json']))
@@ -205,10 +210,7 @@ class GreedyEncoder(EmbeddingBase):
         self.decoder_input_shape = self.decoder.input_shape  # set input shape from loaded model
         self.decoder_output_shape = self.decoder.output_shape  # set output shape from loaded model
 
-    def _noising(self, X, noise_factor):
-        X_noisy = X + noise_factor * np.random.normal(loc=0.0, scale=1.0, size=X.shape)
-        X_noisy = np.clip(X_noisy, 0., 1.)
-        return X_noisy
+
 
 
     def save(self, folder_path, model_name):
@@ -232,7 +234,6 @@ class GreedyEncoder(EmbeddingBase):
         with open(decoder_arch_file, "w+") as json_file:
             json_file.write(self.decoder.to_json())  # arch: json format
         self.decoder.save_weights(decoder_weights_file)  # weights: hdf5 format
-        pass
 
     def compile(self, use_bias=True, *args, **kwargs):
         # we want to call compile, but do nothing, don't raise error here
