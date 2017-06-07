@@ -179,9 +179,11 @@ class LSTMAgent(object):
         self.train_all = train_all
         self.discount = discount
         episode = 0
+        episode_count = 0
         reset = True if num_episode is None else False
         num_episode = num_episode if num_episode is not None else 100
         while episode < num_episode:
+            episode_count += 1
             if reset:
                 episode = 0
             episode += 1
@@ -221,8 +223,8 @@ class LSTMAgent(object):
                         raise Exception('unknown mode {1}, supported mode are {0}'.format(' '.join(['global', 'greedy', 'heuristic']), mode))
                     print('actions', action_history)
                     self.learn(episodes, rewards, batch_size=10, epoch=5)
-                    if save_every_epoch:
-                        self.save(folder_to_save, self.label)
+                    if save_every_epoch and episode_count % 1000==0:
+                        self.save(folder_to_save, self.label+'_'+str(episode_count))
                     print(reward)
                     print("Episode finished after {} timesteps".format(t + 1))
                     break
