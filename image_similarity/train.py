@@ -9,7 +9,7 @@ from unsupervised.greedy_encoding import GreedyEncoder
 from keras.layers import regularizers
 import numpy as np
 import keras
-from common.embedding.utils import visualize_result_ae, visualize_result_encode_decode
+from image_similarity.utils import visualize_result_ae, visualize_result_encode_decode
 model_path = os.path.join(cur_dir, 'models')
 # data_path = os.path.join(cur_dir, 'data', 'men')
 data_path = os.path.join(cur_dir, 'data', 'women')

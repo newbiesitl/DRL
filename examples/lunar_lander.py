@@ -17,7 +17,8 @@ env.render()
 # agent_1 = agent_pool['RandomAgent'](env.observation_space, env.action_space)
 print(env.action_space.n)
 agent_1 = agent_pool['LSTMAgent'](env.observation_space, env.action_space, 100)
-agent_1.roll_out(env, 100, greedy=False)
+# None means run forever
+agent_1.roll_out(env, num_episode=None, greedy=False)
 exit()
 
 for i_episode in range(20):
@@ -30,8 +31,6 @@ for i_episode in range(20):
         # print(observation, type(observation), action, type(action))
         observation, reward, done, info = env.step(action)
         # print(observation, type(observation), action, type(action), reward, type(reward), done, info)
-        exit()
-        agent_1.learn(env)
         if done:
             print(reward)
             print("Episode finished after {} timesteps".format(t+1))

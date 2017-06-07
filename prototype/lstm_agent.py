@@ -51,13 +51,59 @@ class LSTMAgent(object):
         # model.add(LSTM(num_classes, return_sequences=True, activation='softmax'))  # return a single vector of dimension 32
         self.model.add(Dense(1, activation='linear'))
 
-        self.model.compile(loss='mean_absolute_error',
-                          optimizer='rmsprop',
+        self.model.compile(loss='mean_absolute_percentage_error',
+                          optimizer='adam',
                           metrics=['accuracy'],
                           # sample_weight_mode='temporal'
                           )
 
-    def learn(self, observation, action, reward, done=False, batch_size=1, epochs=1):
+    def learn(self, seq, rewards, batch_size=1, epochs=2, ratio=0.8):
+        # for non-greedy, use the final rewards for the entire sequence
+        # for greedy, use current reword for each time step in seq
+        memory = pad_sequences([[[0 for _ in range(self.data_dim)]]], maxlen=self.timesteps, padding='pre')[0]
+        # sequence can be longer than time steps
+        X = []
+        Y = []
+        print('final rewards', sum(rewards)/len(rewards))
+        print('rewards history', rewards)
+        for i in range(len(seq)):
+            observation, action_idx = seq[i]
+            action = self.action_space[:]
+            # one-hot action vector
+            action[action_idx] = 1
+            _X = self._get_SA(observation, action)
+            reward = rewards[i] if rewards[i] > 0 else rewards[i] * 1
+            Y.append(np.array(reward))
+
+            memory = np.concatenate((memory, [_X])) # append new event in memory
+            memory = np.delete(memory, 0, axis=0)  # pop the first from memory
+            _X = np.array(memory)
+            # print(_X.shape)
+            X.append(_X)
+        # for i in range(len(X)):
+        #     print(X[i], Y[i])
+        divider = int(len(X)*ratio)
+        if divider == 0:
+            x_train = np.array(X)
+            y_train = np.array(Y)
+            x_test = np.array(X)
+            y_test = np.array(Y)
+        else:
+            x_train = np.array(X[:divider])
+            y_train = np.array(Y[:divider])
+            x_test = np.array(X[divider:])
+            y_test = np.array(Y[divider:])
+        # print(x_train.shape)
+        sample_weights = np.array([reward for _ in range(len(x_train))])
+
+        self.model.fit(x_train, y_train,
+                       batch_size=batch_size, epochs=epochs,
+                       validation_data=(x_test, y_test),
+                       # sample_weight=sample_weights
+                       )
+
+
+    def online_learning(self, observation, action, reward, done=False, batch_size=1, epochs=1):
         '''
         train model with (s,a) to Reward mapping
         actions are stored in self.action_space
@@ -70,24 +116,7 @@ class LSTMAgent(object):
         :param epochs:
         :return:
         '''
-
-        Y = np.array([reward])
-        this_action = self.action_space
-        this_action[action] = 1
-        X = self._get_SA(observation, this_action)
-        seq = copy.deepcopy(self.memory)
-        seq = np.concatenate((seq, [X]))
-        seq = np.delete(seq, 0, axis=0)  # pop the first from memory
-        X = np.array([seq])
-        sample_weights = np.array([reward for _ in range(len(X))])
-
-        self.model.fit(X, Y,
-                      batch_size=batch_size, epochs=epochs,
-                      validation_data=(X, Y),
-                      sample_weight=sample_weights
-                      )
-        if done:
-            self.memory = pad_sequences([[[0 for _ in range(self.data_dim)]]], maxlen=self.timesteps, padding='pre')[0]
+        raise NotImplemented()
 
     def _get_SA(self, observation, action):
         return np.append(observation, action)
@@ -108,11 +137,11 @@ class LSTMAgent(object):
             seq = np.concatenate((seq, [sa]))
             seq = np.delete(seq, 0, axis=0) # pop the first from memory
             seq = np.array([seq])
-            print(seq)
-            rewards.append(self.model.predict(seq))
+            reward = self.model.predict(seq)
+            # print(sa, reward)
+            rewards.append(reward)
         self.update_memory(observation, self._get_action_onehot(np.argmax(rewards)))
         action = np.argmax(rewards)
-        print(action)
         if done:
             self.memory = pad_sequences([[[0 for _ in range(self.data_dim)]]], maxlen=self.timesteps, padding='pre')[0]
         return action
@@ -122,7 +151,7 @@ class LSTMAgent(object):
         self.memory = np.concatenate((self.memory, [sa]))
         self.memory = np.delete(self.memory, 0, 0)
 
-    def roll_out(self, env, num_episode, epsilon=0.01, learn=True, greedy=False):
+    def roll_out(self, env, num_episode, epsilon=0.1, learn=True, greedy=False):
         '''
         Learn from roll_out, no need to return episodes now, for saving memory
         :param env:
@@ -131,24 +160,38 @@ class LSTMAgent(object):
         :param learn:
         :return:
         '''
-        for episode in range(num_episode):
+        episode = 0
+        reset = True if num_episode is None else False
+        num_episode = num_episode if num_episode is not None else 100
+        while episode < num_episode:
+            if reset:
+                episode = 0
+            episode += 1
             observation = env.reset()
             env.reset()
             episodes = []
+            rewards = []
+            action_history = []
             for t in range(1000):
                 env.render()
                 action = self.act(observation)
                 pre_observation = observation
-                if np.random.uniform(0,1) < episode:
-                    action = self.action_space[np.random.randint(0, len(self.action_space)-1)]
+                if np.random.uniform(0,1) < epsilon:
+                    ind = np.random.randint(0, len(self.action_space))
+                    print('exploration action:', ind)
+                    action = ind
                 # print(observation, type(observation), action, type(action))
                 observation, reward, done, info = env.step(action)
-
+                action_history.append(action)
 
                 # what i'm doing here is to store the episode until the end
                 # when episode finish update the model with entire episode with eligibility trace and discount
-                episodes.append([pre_observation, action, reward])
+                episodes.append([pre_observation, action])
+                rewards.append(reward)
                 self.update_memory(pre_observation, self._get_action_onehot(action))
+
+                # debugging
+                # self.learn(episodes, rewards, 1, 2)
 
                 # if greedy and learn:
                 #     self.learn(observation,action, reward)
@@ -159,6 +202,11 @@ class LSTMAgent(object):
                 #         self.update_memory(observation, self._get_action_onehot(action))
                 if done:
                     # final training after end of episode
+                    if not greedy:
+                        # use final rewards as label
+                        rewards = [rewards[-1] for _ in range(len(rewards))]
+                    print('actions', action_history)
+                    self.learn(episodes, rewards, 1, 1)
                     print(reward)
                     print("Episode finished after {} timesteps".format(t + 1))
                     break
