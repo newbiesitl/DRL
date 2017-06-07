@@ -18,7 +18,7 @@ env.render()
 print(env.action_space.n)
 agent_1 = agent_pool['LSTMAgent'](env.observation_space, env.action_space, 30)
 # None means run forever
-agent_1.roll_out(env, num_episode=None, greedy=False, discount=0.99)
+agent_1.roll_out(env, num_episode=None, mode='greedy', discount=0.99)
 
 # for i_episode in range(20):
 #     observation = env.reset()

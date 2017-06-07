@@ -18,7 +18,7 @@ import numpy as np
 This is Q-Learning, we don't need off policy update, there's no approximation here, we are doing exhaustive search over action space
 
 TODO @charles
-Add discount factor to it
+Greedy is not to only use the heuristic reward, I need to combine the heuristic reward with final reward (discounted or not)
 '''
 
 class LSTMAgent(object):
@@ -148,13 +148,17 @@ class LSTMAgent(object):
         self.memory = np.concatenate((self.memory, [sa]))
         self.memory = np.delete(self.memory, 0, 0)
 
-    def roll_out(self, env, num_episode, epsilon=0.1, discount=1, greedy=False):
+    def roll_out(self, env, num_episode, epsilon=0.01, discount=1, mode='greedy'):
         '''
-        Learn from roll_out, no need to return episodes now, for saving memory
-        :param env:
-        :param num_episode:
-        :param epsilon:
-        :param learn:
+
+        :param env:  env object
+        :param num_episode:  if None run forever
+        :param epsilon:  epsilon greedy for random exploration
+        :param discount: the discount factor
+        :param mode:
+            `greedy`: use heuristic and final reward
+            `global`: only use final reward
+            `heuristic`: use heuristic for non termination states, use final reward for termination state
         :return:
         '''
         self.discount = discount
@@ -188,23 +192,19 @@ class LSTMAgent(object):
                 rewards.append(reward)
                 self.update_memory(pre_observation, self._get_action_onehot(action))
 
-                # debugging
-                # self.learn(episodes, rewards, 1, 2)
-
-                # if greedy and learn:
-                #     self.learn(observation,action, reward)
-                # elif (not greedy) and learn:
-                #     if done:
-                #         self.learn(observation,action, reward)
-                #     else:
-                #         self.update_memory(observation, self._get_action_onehot(action))
                 if done:
                     # final training after end of episode
-                    if not greedy:
+                    if mode == 'global':
                         # use final rewards as label
                         rewards = [rewards[-1] for _ in range(len(rewards))]
+                    if mode == 'heuristic':
+                        rewards = rewards # use heuristic and final result
+                    if mode == 'greedy':
+                        rewards = [(x+rewards[-1])/2 for x in rewards]
+                    else:
+                        raise Exception('unknown mode, supported mode are {0}'.format(' '.join(['global', 'greedy', 'heuristic'])))
                     print('actions', action_history)
-                    self.learn(episodes, rewards, 2, 5)
+                    self.learn(episodes, rewards, batch_size=10, epochs=5)
                     print(reward)
                     print("Episode finished after {} timesteps".format(t + 1))
                     break
