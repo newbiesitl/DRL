@@ -18,7 +18,8 @@ import numpy as np
 This is Q-Learning, we don't need off policy update, there's no approximation here, we are doing exhaustive search over action space
 
 TODO @charles
-Greedy is not to only use the heuristic reward, I need to combine the heuristic reward with final reward (discounted or not)
+1. Save/Load
+2. adaptive
 '''
 
 class LSTMAgent(object):
