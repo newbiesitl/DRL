@@ -46,8 +46,9 @@ class LSTMAgent(object):
                           metrics=['mean_absolute_error'],
                           # sample_weight_mode='temporal'
                           )
+        self.train_all = True
 
-    def learn(self, seq, rewards, batch_size=1, epochs=2, ratio=0.8):
+    def learn(self, seq, rewards, batch_size=1, epochs=2, ratio=0.8,):
         # for non-greedy, use the final rewards for the entire sequence
         # for greedy, use current reword for each time step in seq
         memory = pad_sequences([[[0 for _ in range(self.data_dim)]]], maxlen=self.timesteps, padding='pre')[0]
@@ -87,21 +88,38 @@ class LSTMAgent(object):
         # apply discount here
         sample_weights = []
 
+
+        acc = 1
+        if self.train_all:
+            for _ in range(len(X)):
+                sample_weights.insert(0, acc)
+                acc *= self.discount
+        else:
+            for _ in range(len(x_train)):
+                sample_weights.insert(0, acc)
+                acc *= self.discount
+
         tmp = []
         for i in range(len(sample_weights)):
-            tmp.append(sample_weights[i] * y_train[i])
+            if self.train_all:
+                tmp.append(sample_weights[i] * Y[i])
+            else:
+                tmp.append(sample_weights[i] * y_train[i])
         print('discount rewards', tmp)
-        acc = 1
-        for _ in range(len(x_train)):
-            sample_weights.insert(0, acc)
-            acc *= self.discount
         sample_weights = np.array(sample_weights)
-        self.model.fit(x_train, y_train,
-                       batch_size=batch_size, epochs=epochs,
-                       validation_data=(x_test, y_test),
-                       sample_weight=sample_weights
-                       )
-
+        if self.train_all:
+            X = np.array(X)
+            Y = np.array(Y)
+            self.model.fit(X, Y,
+                           batch_size=batch_size, epochs=epochs,
+                           sample_weight=sample_weights
+                           )
+        else:
+            self.model.fit(x_train, y_train,
+                           batch_size=batch_size, epochs=epochs,
+                           validation_data=(x_test, y_test),
+                           sample_weight=sample_weights
+                           )
 
     def online_learning(self, observation, action, reward, done=False, batch_size=1, epochs=1):
         raise NotImplemented()
@@ -139,7 +157,7 @@ class LSTMAgent(object):
         self.memory = np.concatenate((self.memory, [sa]))
         self.memory = np.delete(self.memory, 0, 0)
 
-    def roll_out(self, env, num_episode, epsilon=0.01, discount=1, mode='greedy', save_every_epoch=False, folder_to_save='.'):
+    def roll_out(self, env, num_episode, epsilon=0.01, discount=1, mode='greedy', save_every_epoch=False, folder_to_save='.', train_all=False):
         '''
 
         :param env:  env object
@@ -153,6 +171,7 @@ class LSTMAgent(object):
         :save_every_epoch: whether save current mode after each epoch
         :return:
         '''
+        self.train_all = train_all
         self.discount = discount
         episode = 0
         reset = True if num_episode is None else False
@@ -189,12 +208,12 @@ class LSTMAgent(object):
                     if mode == 'global':
                         # use final rewards as label
                         rewards = [rewards[-1] for _ in range(len(rewards))]
-                    if mode == 'heuristic':
+                    elif mode == 'heuristic':
                         rewards = rewards # use heuristic and final result
-                    if mode == 'greedy':
+                    elif mode == 'greedy':
                         rewards = [(x+rewards[-1])/2 for x in rewards]
                     else:
-                        raise Exception('unknown mode, supported mode are {0}'.format(' '.join(['global', 'greedy', 'heuristic'])))
+                        raise Exception('unknown mode {1}, supported mode are {0}'.format(' '.join(['global', 'greedy', 'heuristic']), mode))
                     print('actions', action_history)
                     self.learn(episodes, rewards, batch_size=10, epochs=5)
                     if save_every_epoch:
