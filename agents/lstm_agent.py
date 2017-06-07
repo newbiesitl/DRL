@@ -226,7 +226,11 @@ class LSTMAgent(object):
                     else:
                         raise Exception('unknown mode {1}, supported mode are {0}'.format(' '.join(['global', 'greedy', 'heuristic']), mode))
                     print('actions', action_history)
-                    self.learn(episodes, rewards, batch_size=10, epoch=5)
+                    epoch = 5
+                    # if the final reward is positive, train with more epoch
+                    if rewards[-1] > 0:
+                        epoch *= 4
+                    self.learn(episodes, rewards, batch_size=10, epoch=epoch)
                     if save_every_epoch and episode_count % 1000==0:
                         self.save(folder_to_save, self.label+'_'+str(episode_count))
                     print(reward)
