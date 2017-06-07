@@ -20,7 +20,7 @@ This is Q-Learning, we don't need off policy update, there's no approximation he
 
 TODO @charles
 1. Save/Load
-2. adaptive
+2. train on batch of episodes
 3. Have more epoch for positive final results, try to "over-fit" the final positive rewards
 '''
 
