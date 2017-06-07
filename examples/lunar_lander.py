@@ -10,7 +10,6 @@ cur_dir = os.path.dirname(__file__)
 project_root = os.path.join(cur_dir, '..', )
 folder_to_save = os.path.join(project_root, 'agents', 'models')
 agent_pool = {
-    'TabularQAgent': TabularQAgent,
     'RandomAgent': RandomAgent,
     'LSTMAgent': LSTMAgent
 }
@@ -18,8 +17,6 @@ agent_pool = {
 # env = gym.make('CartPole-v0')
 env = gym.make('LunarLander-v2')
 env.render()
-# agent_1 = TabularQAgent(env.observation_space, env.action_space)
-# agent_1 = agent_pool['RandomAgent'](env.observation_space, env.action_space)
 print(env.action_space.n)
 mode = 'heuristic'
 timesteps = 30
