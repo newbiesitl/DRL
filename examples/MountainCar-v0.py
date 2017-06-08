@@ -20,8 +20,8 @@ env = gym.make(env_name)
 if render:
     env.render()
 print(env.action_space.n)
-mode = 'global'
-timesteps = 100
+mode = 'heuristic'
+timesteps = 300
 h_dim = 32
 model_name = '_'.join([env_name, mode, str(timesteps), str(h_dim)])
 save_every_epoch = True

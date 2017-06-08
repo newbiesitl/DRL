@@ -19,7 +19,7 @@ env = gym.make(env_name)
 if render:
     env.render()
 print(env.action_space.n)
-mode = 'greedy'
+mode = 'heuristic'
 timesteps = 100
 h_dim = 32
 model_name = '_'.join([env_name, mode, str(timesteps), str(h_dim)])

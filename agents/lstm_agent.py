@@ -20,7 +20,7 @@ This is Q-Learning, we don't need off policy update, there's no approximation he
 
 TODO @charles
 1. Save/Load
-2. train on batch of episodes
+2. train on batch of episodes, implement parallel batch roll out to collect batches
 3. Have more epoch for positive final results, try to "over-fit" the final positive rewards
 '''
 
@@ -163,6 +163,69 @@ class LSTMAgent(object):
         sa = self._get_SA(observation, action)
         self.memory = np.concatenate((self.memory, [sa]))
         self.memory = np.delete(self.memory, 0, 0)
+
+    @staticmethod
+    def _simulation(env, time_limit, render=False, epsilon=0.01, mode='heuristic'):
+        '''
+        Static simulation method, used to create episode in parallel
+        :param env:
+        :param time_limit:
+        :param render:
+        :param epsilon:
+        :param mode:
+        :return:
+        '''
+        # observation = env.reset()
+        # env.reset()
+        # episodes = []
+        # rewards = []
+        # action_history = []
+        # for t in range(time_limit):
+        #     if render:
+        #         env.render()
+        #     action = self.act(observation)
+        #     pre_observation = observation
+        #     if np.random.uniform(0, 1) < epsilon:
+        #         ind = np.random.randint(0, len(self.action_space))
+        #         if self.verbose:
+        #             print('exploration action:', ind)
+        #         action = ind
+        #     observation, reward, done, info = env.step(action)
+        #     action_history.append(action)
+        #
+        #     # what i'm doing here is to store the episode until the end
+        #     # when episode finish update the model with entire episode with eligibility trace and discount
+        #     episodes.append([pre_observation, action])
+        #     rewards.append(reward)
+        #     self.update_memory(pre_observation, self._get_action_onehot(action))
+        #
+        #     if done or t == time_limit - 1:
+        #         # final training after end of episode
+        #         if mode == 'global':
+        #             # use final rewards as label
+        #             rewards = [rewards[-1] for _ in range(len(rewards))]
+        #         elif mode == 'heuristic':
+        #             if rewards[-1] > 0:
+        #                 # if the termination reward is positive, backpropagate the positive signal all the way to the beginning of the episode
+        #                 rewards = [(x + rewards[-1]) for x in rewards]
+        #             else:
+        #                 rewards = rewards  # use heuristic and final result
+        #         elif mode == 'greedy':
+        #             rewards = [(x + rewards[-1]) / 2 for x in rewards]
+        #         else:
+        #             raise Exception(
+        #                 'unknown mode {1}, supported mode are {0}'.format(' '.join(['global', 'greedy', 'heuristic']),
+        #                                                                   mode))
+        #         if self.verbose:
+        #             print('actions', action_history)
+        #         epoch = 5
+        #         # if the final reward is positive, train with more epoch
+        #         if rewards[-1] > 0:
+        #             epoch *= 3
+        #         print(reward)
+        #         print("Episode finished after {} timesteps".format(t + 1))
+        #         break
+
 
     def roll_out(self, env, num_episode, epsilon=0.01, discount=1, mode='greedy', save_every_epoch=False, folder_to_save='.', train_all=False, load_saved_model=True, render=True, time_limit=1000):
         '''
