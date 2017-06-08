@@ -14,19 +14,20 @@ agent_pool = {
 }
 render = True
 # env = gym.make('CartPole-v0')
-env_name = 'LunarLander-v2'
+# env_name = 'LunarLander-v2'
+env_name = 'MountainCar-v0'
 env = gym.make(env_name)
 if render:
     env.render()
 print(env.action_space.n)
-mode = 'greedy'
+mode = 'global'
 timesteps = 100
 h_dim = 32
 model_name = '_'.join([env_name, mode, str(timesteps), str(h_dim)])
 save_every_epoch = True
 agent_1 = agent_pool['LSTMAgent'](env.observation_space, env.action_space, timesteps=30, hidden_dim=h_dim, label=model_name)
 # None means run forever
-agent_1.roll_out(env, num_episode=None, mode=mode, discount=0.99, save_every_epoch=save_every_epoch, folder_to_save=folder_to_save, train_all=True, load_saved_model=True, render=render)
+agent_1.roll_out(env, num_episode=None, mode=mode, discount=0.99, save_every_epoch=save_every_epoch, folder_to_save=folder_to_save, train_all=True, load_saved_model=True, render=render, time_limit=200)
 
 # for i_episode in range(20):
 #     observation = env.reset()

@@ -25,7 +25,7 @@ TODO @charles
 '''
 
 class LSTMAgent(object):
-    def __init__(self, observation_space, action_space, timesteps, label, hidden_dim=32, discount_factor=1, loss_function='mean_absolute_error'):
+    def __init__(self, observation_space, action_space, timesteps, label, hidden_dim=32, discount_factor=1, loss_function='mean_absolute_error', verbose=False):
         self.action_space = [0 for _ in range(action_space.n)]
         self.data_dim = int(observation_space.shape[0]+action_space.n)
         self.timesteps = timesteps
@@ -50,6 +50,7 @@ class LSTMAgent(object):
                           )
 
         self.train_all = True
+        self.verbose = verbose
 
     def learn(self, seq, rewards, batch_size=1, epoch=2, ratio=0.8, ):
         # for non-greedy, use the final rewards for the entire sequence
@@ -58,8 +59,9 @@ class LSTMAgent(object):
         # sequence can be longer than time steps
         X = []
         Y = []
-        print('final rewards', sum(rewards)/len(rewards))
-        print('rewards history', rewards)
+        if self.verbose:
+            print('final rewards', sum(rewards)/len(rewards))
+            print('rewards history', rewards)
         for i in range(len(seq)):
             observation, action_idx = seq[i]
             action = self.action_space[:]
@@ -115,13 +117,15 @@ class LSTMAgent(object):
             Y = np.array(Y)
             self.model.fit(X, Y,
                            batch_size=batch_size, epochs=epoch,
-                           sample_weight=sample_weights
+                           sample_weight=sample_weights,
+                           verbose=self.verbose
                            )
         else:
             self.model.fit(x_train, y_train,
                            batch_size=batch_size, epochs=epoch,
                            validation_data=(x_test, y_test),
-                           sample_weight=sample_weights
+                           sample_weight=sample_weights,
+                           verbose = self.verbose
                            )
 
     def online_learning(self, observation, action, reward, done=False, batch_size=1, epochs=1):
@@ -160,7 +164,7 @@ class LSTMAgent(object):
         self.memory = np.concatenate((self.memory, [sa]))
         self.memory = np.delete(self.memory, 0, 0)
 
-    def roll_out(self, env, num_episode, epsilon=0.01, discount=1, mode='greedy', save_every_epoch=False, folder_to_save='.', train_all=False, load_saved_model=True):
+    def roll_out(self, env, num_episode, epsilon=0.01, discount=1, mode='greedy', save_every_epoch=False, folder_to_save='.', train_all=False, load_saved_model=True, render=True, time_limit=1000):
         '''
 
         :param env:  env object
@@ -175,7 +179,10 @@ class LSTMAgent(object):
         :return:
         '''
         if load_saved_model:
-            self.load(folder_to_save, self.label)
+            try:
+                self.load(folder_to_save, self.label)
+            except FileNotFoundError:
+                print('No saved file found, have you created the model yet? Loading is ignored, start with new model.')
         self.train_all = train_all
         self.discount = discount
         episode = 0
@@ -184,6 +191,7 @@ class LSTMAgent(object):
         num_episode = num_episode if num_episode is not None else 100
         while episode < num_episode:
             episode_count += 1
+            print('episode:', episode_count)
             if reset:
                 episode = 0
             episode += 1
@@ -192,15 +200,16 @@ class LSTMAgent(object):
             episodes = []
             rewards = []
             action_history = []
-            for t in range(1000):
-                env.render()
+            for t in range(time_limit):
+                if render:
+                    env.render()
                 action = self.act(observation)
                 pre_observation = observation
                 if np.random.uniform(0,1) < epsilon:
                     ind = np.random.randint(0, len(self.action_space))
-                    print('exploration action:', ind)
+                    if self.verbose:
+                        print('exploration action:', ind)
                     action = ind
-                # print(observation, type(observation), action, type(action))
                 observation, reward, done, info = env.step(action)
                 action_history.append(action)
 
@@ -210,7 +219,7 @@ class LSTMAgent(object):
                 rewards.append(reward)
                 self.update_memory(pre_observation, self._get_action_onehot(action))
 
-                if done:
+                if done or t == time_limit-1:
                     # final training after end of episode
                     if mode == 'global':
                         # use final rewards as label
@@ -225,13 +234,18 @@ class LSTMAgent(object):
                         rewards = [(x + rewards[-1]) / 2 for x in rewards]
                     else:
                         raise Exception('unknown mode {1}, supported mode are {0}'.format(' '.join(['global', 'greedy', 'heuristic']), mode))
-                    print('actions', action_history)
+                    if self.verbose:
+                        print('actions', action_history)
                     epoch = 5
                     # if the final reward is positive, train with more epoch
                     if rewards[-1] > 0:
-                        epoch *= 4
+                        epoch *= 3
+                    print('learning...', end='')
                     self.learn(episodes, rewards, batch_size=10, epoch=epoch)
-                    if save_every_epoch and episode_count % 1000==0:
+                    print('done.')
+                    if save_every_epoch:
+                        self.save(folder_to_save, self.label)
+                    if episode_count % 1000==0:
                         self.save(folder_to_save, self.label+'_'+str(episode_count))
                     print(reward)
                     print("Episode finished after {} timesteps".format(t + 1))
@@ -241,7 +255,7 @@ class LSTMAgent(object):
         arch_file = os.path.join(folder_path, '.'.join(['_'.join([model_name, 'arch']), 'json']))
         weights_file = os.path.join(folder_path, '.'.join(['_'.join([model_name, 'weights']), 'json']))
         # Load autoencoder architecture + weights + shapes
-        json_file = open(arch_file, 'r')  # read architecture json
+        json_file = open(arch_file, 'r+')  # read architecture json
         autoencoder_json = json_file.read()
         json_file.close()
         self.model = model_from_json(autoencoder_json)  # convert json -> model architecture
@@ -251,6 +265,7 @@ class LSTMAgent(object):
         self.model.compile(loss=self.loss_function,
                           optimizer='adam',
                           metrics=[self.loss_function],
+
                           # sample_weight_mode='temporal'
                           )
 
