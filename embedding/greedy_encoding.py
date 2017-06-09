@@ -51,7 +51,7 @@ class GreedyEncoder(EmbeddingBase):
         optimizer = optimizer
         autoencoder.compile(optimizer=optimizer, loss=loss_function)
         autoencoder.fit(x_train, y_train,
-                        nb_epoch=epoch,
+                        epochs=epoch,
                         batch_size=self.batch_size,
                         shuffle=True,
                         verbose=self.verbose,
@@ -141,7 +141,7 @@ class GreedyEncoder(EmbeddingBase):
         self.encoder_decoder.fit(
             (self._x_train_set),
             (self._x_train_set),
-            nb_epoch=self.blue_print['epoch'],
+            epochs=self.blue_print['epoch'],
             batch_size=self.batch_size,
             shuffle=True,
             verbose=self.verbose,

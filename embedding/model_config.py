@@ -1,5 +1,5 @@
 import keras
-output_shape = (60, 40)
+output_shape = (80, 60)
 # output_shape = (28, 28)
 input_dim = output_shape[1] * output_shape[0]
 use_bias = True
@@ -9,7 +9,7 @@ activation_1 = 'relu'
 activation_2 = 'sigmoid'
 optimizer = keras.optimizers.Adadelta()
 
-large_network_config = {
+c_4000_2000_300_2000_4000 = {
     'stack': [
         {
             'input_dimension': input_dim,
@@ -87,6 +87,9 @@ large_network_config = {
     'loss_function': 'binary_crossentropy'
 }
 
+c_4000_2000_1000_2000_4000 = c_4000_2000_300_2000_4000
+c_4000_2000_1000_2000_4000['stack'][2]['embedded_dim'] = 1000
+c_4000_2000_1000_2000_4000['stack'][3]['input_dim'] = 1000
 
 mid_size_network_config = {
     'stack': [
