@@ -1,10 +1,10 @@
 import keras
-output_shape = (80, 60)
+output_shape = (60, 40)
 # output_shape = (28, 28)
 input_dim = output_shape[1] * output_shape[0]
-use_bias = True
-greedy_epoch = 20
-fine_tuning_epoch = 40
+use_bias = False
+greedy_epoch = 7
+fine_tuning_epoch = 7
 activation_1 = 'relu'
 activation_2 = 'sigmoid'
 optimizer = keras.optimizers.Adadelta()
@@ -58,6 +58,9 @@ c_4000_2000_1000 = {
     'optimizer': optimizer,
     'loss_function': 'binary_crossentropy'
 }
+
+c_4000_2000_300 = c_4000_2000_1000
+c_4000_2000_300['stack'][-1]['embedding_dimension'] = 300
 
 c_4000_2000_300_2000_4000 = {
     'stack': [

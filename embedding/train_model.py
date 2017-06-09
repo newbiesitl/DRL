@@ -12,7 +12,7 @@ from embedding.model_config import *
 model_path = os.path.join(cur_dir, 'models')
 
 
-def init_model(config, model_name, train=False, show_results=False, test_on_training = False, use_bias = True, test_on_noise = False, data_set ='all', shuffle_samples = True, batch_size=2000):
+def init_model(config, model_name, train=False, show_results=False, test_on_training = False, test_on_noise = False, data_set ='all', shuffle_samples = True, batch_size=2000):
     data_path = os.path.join(cur_dir, 'data', data_set)
     model_name = '_'.join([model_name, 'with-bias' if use_bias else 'without-bias', data_set])
 
@@ -37,6 +37,7 @@ def init_model(config, model_name, train=False, show_results=False, test_on_trai
             ae.set_test_data(x_test, x_test)
             ae.set_batch_size(500)
             ae.fit()
+        break
     ae.save(model_path, model_name)
     if test_on_training:
         x_test = x_train
@@ -54,9 +55,10 @@ def init_model(config, model_name, train=False, show_results=False, test_on_trai
 # Driver file
 if __name__ == '__main__':
     for session in [
-                   (c_4000_2000_300_2000_4000, 'c_4000_2000_300_2000_4000'),
-                    (c_4000_2000_1000, 'c_4000_2000_1000'),
-                    (c_4000_2000_1000_2000_4000, 'c_4000_2000_1000_2000_4000'),
+        # (c_4000_2000_1000, 'c_4000_2000_1000'),
+        # (c_4000_2000_300_2000_4000, 'c_4000_2000_300_2000_4000'),
+        (c_4000_2000_1000_2000_4000, 'c_4000_2000_1000_2000_4000'),
+        # (c_4000_2000_300, 'c_4000_2000_300'),
     ]:
         model_name, config = session
-        init_model(model_name, config, train=True, show_results=True, batch_size=50000, shuffle_samples=True)
+        init_model(model_name, config, train=True, show_results=True, batch_size=10000, shuffle_samples=True)
