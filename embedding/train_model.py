@@ -11,23 +11,16 @@ from utils.utils import visualize_result_ae, visualize_result_encode_decode
 from embedding.model_config import *
 model_path = os.path.join(cur_dir, 'models')
 
-def train_model(config, model_name, show_results=False):
-    test_on_training = True
-    use_bias = True
-    test_on_noise = False
-    viz_result = True
-    data_set = 'all'
+def init_model(config, model_name, show_results=False, test_on_training = False, use_bias = True, test_on_noise = False, data_set ='all', random_sample = True):
     data_path = os.path.join(cur_dir, 'data', data_set)
     train = True
-    model_name = '_'.join([model_name, 'with bias' if use_bias else 'without bias', data_set])
-    random_sample = True
+    model_name = '_'.join([model_name, 'with-bias' if use_bias else 'without-bias', data_set])
     batch_size = 54000
 
     # create an transformer
     t = ImageTransformer()
     # configure the transformer
     t.configure(output_shape)
-
     ae = GreedyEncoder(verbose=True)
     if train:
         ae.compile(use_bias=use_bias)
@@ -64,4 +57,4 @@ if __name__ == '__main__':
     for session in [(c_4000_2000_1000_2000_4000, 'c_4000_2000_1000_2000_4000'),
                    (c_4000_2000_300_2000_4000, 'c_4000_2000_300_2000_4000')]:
         model_name, config = session
-        train_model(model_name, config)
+        init_model(model_name, config)
