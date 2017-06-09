@@ -1,15 +1,17 @@
-import os, sys
+import os
+import sys
+
 cur_dir = os.path.dirname(__file__)
 project_root = os.path.join(cur_dir,'..','..')
 sys.path.append(project_root)
 
 
-from image_similarity.utils import  ImageTransformer
-from unsupervised.greedy_encoding import GreedyEncoder
-from keras.layers import regularizers
+from utils.utils import  ImageTransformer
+from embedding.greedy_encoding import GreedyEncoder
 import numpy as np
 import keras
-from image_similarity.utils import visualize_result_ae, visualize_result_encode_decode
+from utils.utils import visualize_result_ae
+
 model_path = os.path.join(cur_dir, 'models')
 # data_path = os.path.join(cur_dir, 'data', 'men')
 data_path = os.path.join(cur_dir, 'data', 'women')

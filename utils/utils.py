@@ -59,8 +59,7 @@ class ImageTransformer(TransformerBase):
             raise Exception('Please configure the transformer before use')
         return self._read_data(folder_name, gray_scale=flatten, batch_size=batch_size)
 
-    # read_data:
-    # todo @charles add normalization and reshape logic here
+
     def _read_data(self, folder_name, gray_scale=False, batch_size=256):
         onlyfiles = (os.path.join(folder_name, f) for f in listdir(folder_name) if isfile(join(folder_name, f)))
         batch = []
@@ -80,6 +79,10 @@ class ImageTransformer(TransformerBase):
                 batch.clear()
                 count = 0
                 yield buf
+
+    @staticmethod
+    def _read_file_worker(path):
+        pass
 
     # read_img: read image, and convert to numpy
     def _read_img(self, img_filename, gray_scale=False):
