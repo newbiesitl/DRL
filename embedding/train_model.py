@@ -11,11 +11,9 @@ from utils.utils import visualize_result_ae, visualize_result_encode_decode
 from embedding.model_config import *
 model_path = os.path.join(cur_dir, 'models')
 
-def init_model(config, model_name, show_results=False, test_on_training = False, use_bias = True, test_on_noise = False, data_set ='all', random_sample = True):
+def init_model(config, model_name, train=False, show_results=False, test_on_training = False, use_bias = True, test_on_noise = False, data_set ='all', shuffle_samples = True, batch_size=2000):
     data_path = os.path.join(cur_dir, 'data', data_set)
-    train = True
     model_name = '_'.join([model_name, 'with-bias' if use_bias else 'without-bias', data_set])
-    batch_size = 54000
 
     # create an transformer
     t = ImageTransformer()
@@ -48,7 +46,7 @@ def init_model(config, model_name, show_results=False, test_on_training = False,
         # print(x_test)
     num_images = min(len(x_test), 10)
     if show_results:
-        visualize_result_ae(ae, x_test, output_shape, random_sample=random_sample, number_images=num_images)
+        visualize_result_ae(ae, x_test, output_shape, random_sample=shuffle_samples, number_images=num_images)
         # visualize_result_encode_decode(ae, x_test, output_shape, random_sample=False)
         # visualize_result_ae(ae, x_train, output_shape, random_sample=True)
 
@@ -57,4 +55,4 @@ if __name__ == '__main__':
     for session in [(c_4000_2000_1000_2000_4000, 'c_4000_2000_1000_2000_4000'),
                    (c_4000_2000_300_2000_4000, 'c_4000_2000_300_2000_4000')]:
         model_name, config = session
-        init_model(model_name, config)
+        init_model(model_name, config, train=False, show_results=True, batch_size=300, shuffle_samples=True)
