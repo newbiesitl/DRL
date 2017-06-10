@@ -64,24 +64,7 @@ class ImageTransformer(TransformerBase):
                 data = self._read_data_parallel(chunk, gray_scale=flatten, batch_size=batch_size)
                 yield data
         raise Exception('single thread is not supported')
-        #return self._read_data(folder_name, gray_scale=flatten, batch_size=batch_size)
 
-
-    def _read_data(self, onlyfiles, gray_scale=False, batch_size=256):
-        batch = []
-        count = 0
-        for file_path in onlyfiles:
-            # we are able to read png
-            if file_path[-3:] not in  ['jpg', 'png', 'jpeg']:
-                continue
-            img = ImageTransformer._read_img(file_path, gray_scale=gray_scale)
-            img = np.array(scipy.misc.imresize(img, self.output_shape))
-            batch.append(img)
-            count += 1
-        buf = np.array(batch)
-        buf = buf.reshape((len(buf), np.prod(buf.shape[1:])))
-        buf = buf.astype('float32') / 255.
-        return buf
 
     def _read_data_parallel(self, onlyfiles, gray_scale=False, batch_size=256):
         patch = zip(onlyfiles, [gray_scale]*len(onlyfiles), [self.output_shape]*len(onlyfiles))
@@ -103,8 +86,6 @@ class ImageTransformer(TransformerBase):
             return
         img = ImageTransformer._read_img(file_path, gray_scale=gray_scale)
         img = np.array(scipy.misc.imresize(img, output_shape))
-        img = img.reshape((len(img), np.prod(img.shape[1:])))
-        img = img.astype('float32') / 255.
         return img
 
     # read_img: read image, and convert to numpy
