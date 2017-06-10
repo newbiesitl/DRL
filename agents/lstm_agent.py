@@ -282,7 +282,7 @@ class LSTMAgent(object):
                 rewards.append(reward)
                 self.update_memory(pre_observation, self._get_action_onehot(action))
 
-                if done or t == time_limit-1:
+                if done:
                     # final training after end of episode
                     if mode == 'global':
                         # use final rewards as label

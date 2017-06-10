@@ -29,13 +29,14 @@ class TransformerBase(ABC):
 class ImageTransformer(TransformerBase):
     def __init__(self):
         self.output_shape = None
+        self.encoder = None
         super().__init__()
 
     def configure(self, output_shape):
         self.output_shape = output_shape
 
-    def register_encoder(self, encoder):
-        raise NotImplementedError()
+    def register_encoder(self, encoder=None):
+        self.encoder = encoder
 
     def transform_one(self, input):
         '''
@@ -62,8 +63,10 @@ class ImageTransformer(TransformerBase):
             onlyfiles = [os.path.join(folder_name, f) for f in listdir(folder_name) if isfile(join(folder_name, f))]
             for chunk in chunks(onlyfiles, batch_size):
                 data = self._read_data_parallel(chunk, gray_scale=flatten, batch_size=batch_size)
-                yield data
-        raise Exception('single thread is not supported')
+                if self.encoder is None:
+                    yield data
+                else:
+                    yield self.encoder.encode(data)
 
 
     def _read_data_parallel(self, onlyfiles, gray_scale=False, batch_size=256):

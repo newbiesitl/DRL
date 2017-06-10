@@ -21,7 +21,7 @@ if render:
 print(env.action_space.n)
 mode = 'heuristic'
 timesteps = 100
-h_dim = 32
+h_dim = 64
 model_name = '_'.join([env_name, mode, str(timesteps), str(h_dim)])
 save_every_epoch = True
 agent_1 = agent_pool['LSTMAgent'](env.observation_space, env.action_space, timesteps=30, hidden_dim=h_dim, label=model_name)
