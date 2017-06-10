@@ -72,3 +72,39 @@ c_4000_2000_1000['stack'][1]['input_dimension'] = 4000
 c_4000_2000_1000['stack'][1]['embedding_dimension'] = 2000
 c_4000_2000_1000['stack'][-1]['input_dimension'] = 2000
 c_4000_2000_1000['stack'][-1]['embedding_dimension'] = 1000
+
+
+c_4000_2000_1000_2000_4000 = c_4000_2000_1000
+c_4000_2000_1000_2000_4000['stack'].append(
+{
+            'input_dimension': 1000,
+            'output_dimension': input_dim,
+            'embedding_dimension': 2000,
+            'activation_1': activation_1,
+            # 'activity_regularizer_1': regularizers.l2(10e-4),
+            'bias_1': use_bias,
+            'activation_2': stack_activation,
+            # 'activity_regularizer_2': regularizers.l2(10e-4),
+            'bias_2': use_bias,
+            'optimizer': optimizer,
+            'loss_function': 'binary_crossentropy',
+            'epoch': greedy_epoch
+        }
+)
+
+c_4000_2000_1000_2000_4000['stack'].append(
+{
+            'input_dimension': 2000,
+            'output_dimension': input_dim,
+            'embedding_dimension': 4000,
+            'activation_1': activation_1,
+            # 'activity_regularizer_1': regularizers.l2(10e-4),
+            'bias_1': use_bias,
+            'activation_2': stack_activation,
+            # 'activity_regularizer_2': regularizers.l2(10e-4),
+            'bias_2': use_bias,
+            'optimizer': optimizer,
+            'loss_function': 'binary_crossentropy',
+            'epoch': greedy_epoch
+        }
+)
