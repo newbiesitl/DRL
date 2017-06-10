@@ -6,6 +6,13 @@ from alg.EKNN import EmbeddingkNN
 import numpy as np
 import shutil
 
+
+'''
+TODO @Charles
+The indexing is wrong, because use the same picture as query won't return itself
+'''
+
+
 def pipeline():
     cur_dir = os.path.dirname(__file__)
     project_root = os.path.join(cur_dir, '..', '..')
@@ -62,24 +69,27 @@ def pipeline():
     # read from query folder
     query_folder = os.path.join(app_folder, 'query')
     answer_folder = os.path.join(app_folder, 'answer')
+    while True:
+        c = input('Continue? \nType `q` to break')
+        if c == 'n':
+            break
+        for batch in t.transform_all(query_folder):
+            query = batch
+            print(query)
+            print(query.shape)
+            centroid = np.mean(query, axis=0)
+            distances, indices = EMB.predict(np.array([centroid]))  # predict
 
-    for batch in t.transform_all(query_folder):
-        query = batch
-        print(query)
-        print(query.shape)
-        centroid = np.mean(query, axis=0)
-        distances, indices = EMB.predict(np.array([centroid]))  # predict
-
-        # =================================
-        # Make k-recommendations using kNN prediction
-        # =================================
-        answer_file_list = []
-        print("Making k-recommendations for each user...")
-        for i, (index, distance) in enumerate(zip(indices, distances)):
-            print("{0}: indices={1}, score={2}".format(i, index, distance))
-            answer_file_list.append(dm.idx_f(index))
-        for answer_file in answer_file_list:
-            shutil.copy(answer_file, os.path.join(answer_folder, str(dm.f_idx(answer_file))+'.jpg'))
+            # =================================
+            # Make k-recommendations using kNN prediction
+            # =================================
+            answer_file_list = []
+            print("Making k-recommendations for each user...")
+            for i, (index, distance) in enumerate(zip(indices, distances)):
+                print("{0}: indices={1}, score={2}".format(i, index, distance))
+                answer_file_list = [dm.get_file_name(x) for x in index]
+                for answer_file in answer_file_list:
+                    shutil.copy(answer_file, os.path.join(answer_folder, str(dm.get_index(answer_file))+'.jpg'))
 
 if __name__ == "__main__":
     pipeline()
