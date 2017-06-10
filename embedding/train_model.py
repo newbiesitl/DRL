@@ -1,6 +1,6 @@
 import os, sys
 cur_dir = os.path.dirname(__file__)
-project_root = os.path.join(cur_dir,'..','..')
+project_root = os.path.join(cur_dir, '..', '..')
 sys.path.append(project_root)
 
 
@@ -10,7 +10,6 @@ import numpy as np
 from utils.utils import visualize_result_ae, visualize_result_encode_decode
 from embedding.model_config import *
 model_path = os.path.join(cur_dir, 'models')
-# data_path = os.path.join(cur_dir, 'data', 'men')
 data_path = os.path.join(cur_dir, 'data', 'all')
 
 def main():
