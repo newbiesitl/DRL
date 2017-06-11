@@ -21,6 +21,7 @@ ae.compile(use_bias=True)
 ae.arch(model_config)
 ae.set_batch_size(20)
 ae.fit()
+# Next step is to visualize the result from prediction
 # for batch in dat:
 #     print(batch.shape)
 
