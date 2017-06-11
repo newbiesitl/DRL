@@ -75,6 +75,7 @@ def pipeline():
             query = batch
             # print(query)
             print(query.shape)
+            # possible improvement, change the average to weighted average, assign more weights to recent clicks
             centroid = np.mean(query, axis=0)
             distances, indices = EMB.predict(np.array([centroid]))  # predict
 
@@ -82,14 +83,6 @@ def pipeline():
             # Make k-recommendations using kNN prediction
             # =================================
             print("Making k-recommendations for each user...")
-
-
-            '''
-            The file name to indices mapping is wrong, debug this
-
-            Fix: don't load np array from file
-            generate np array from raw file and build mappings
-            '''
 
             # backward mapping to map indices back to vectors, and check the euclidean distance, if the mapping is correct
             # the euclidean distance of top 1 should be 0

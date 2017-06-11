@@ -2,8 +2,7 @@
 **Authors:**
     yubo@cse.yorku.ca
 """
-import scipy.misc
-import os
+import scipy.misc, os
 from os import listdir
 from os.path import isfile, join
 from abc import ABC, abstractmethod
@@ -11,6 +10,8 @@ import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 import random
 import matplotlib.pyplot as plt
+from multiprocessing import Pool
+
 
 class TransformerBase(ABC):
     @abstractmethod
@@ -45,6 +46,8 @@ class ImageTransformer(TransformerBase):
         :param kwargs:
         :return:
         '''
+        if self.output_shape is None:
+            raise Exception("output shape is not configured")
         ret = self._read_data_parallel([file_path], gray_scale=True)
         if self.encoder is not None:
             return self.encoder.encode(ret)
@@ -57,12 +60,16 @@ class ImageTransformer(TransformerBase):
         :param kwargs:
         :return:
         '''
+        if self.output_shape is None:
+            raise Exception("output shape is not configured")
         ret = self._read_data_parallel(file_path_list,  gray_scale=True)
         if self.encoder is not None:
             return self.encoder.encode(ret)
         return ret
 
     def transform_all(self, folder_name, grey_scale=True, batch_size=256, multi_thread=True):
+        if self.output_shape is None:
+            raise Exception("output shape is not configured")
         if multi_thread:
             onlyfiles = [os.path.join(folder_name, f) for f in listdir(folder_name) if isfile(join(folder_name, f))]
             for chunk in chunks(onlyfiles, batch_size):
@@ -75,7 +82,6 @@ class ImageTransformer(TransformerBase):
 
     def _read_data_parallel(self, onlyfiles, gray_scale=False, batch_size=256):
         patch = zip(onlyfiles, [gray_scale]*len(onlyfiles), [self.output_shape]*len(onlyfiles))
-        from multiprocessing import Pool
         p = Pool(8)
         batch = p.map(ImageTransformer._read_file_worker, patch)
         p.close()
@@ -83,6 +89,7 @@ class ImageTransformer(TransformerBase):
         # nothing being removed ...
         batch = [x for x in batch if x is not None]
         batch = np.array(batch)
+        print(batch.shape)
         batch = batch.reshape((len(batch), np.prod(batch.shape[1:])))
         batch = batch.astype('float32') / 255.
         return batch
@@ -111,7 +118,7 @@ def chunks(l, n):
         yield l[i:i + n]
 
 
-def visualize_result_ae(ae, test, shape, random_sample=True, number_images=10):
+def visualize_result_ae(ae, test, shape, random_sample=True, number_images=10, color_img=False):
     # print(dir(encoder[0]))
     # print(encoder[0].get_weights())
     # exit()
@@ -138,9 +145,13 @@ def visualize_result_ae(ae, test, shape, random_sample=True, number_images=10):
         ax = plt.subplot(2, n, i + 1)
         # plt.imshow(test[i].reshape(dim_x, dim_x))
         original_matrix = test[indices[i]]
-        original_matrix = np.resize(original_matrix, shape)
-        plt.imshow(original_matrix)
-        plt.gray()
+        if color_img:
+            original_matrix = np.resize(original_matrix, (shape[0], shape[1], 3))
+            plt.imshow(original_matrix, interpolation='nearest')
+        else:
+            original_matrix = np.resize(original_matrix, shape)
+            plt.imshow(original_matrix)
+        # plt.gray()
         ax.get_xaxis().set_visible(False)
         ax.get_yaxis().set_visible(False)
 
@@ -149,10 +160,15 @@ def visualize_result_ae(ae, test, shape, random_sample=True, number_images=10):
         ax = plt.subplot(3, n, i + 1 + 2 * n)
         # threshold the data
         decoded_matrix = decoded_imgs[indices[i]]
-        decoded_matrix = np.resize(decoded_matrix, shape)
-        plt.imshow(decoded_matrix)
 
-        plt.gray()
+        if color_img:
+            decoded_matrix = np.resize(decoded_matrix, (shape[0], shape[1], 3))
+            plt.imshow(decoded_matrix, interpolation='nearest')
+        else:
+            decoded_matrix = np.resize(decoded_matrix, shape)
+            plt.imshow(decoded_matrix)
+
+        # plt.gray()
         ax.get_xaxis().set_visible(False)
         ax.get_yaxis().set_visible(False)
     plt.show()
