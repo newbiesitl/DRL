@@ -38,31 +38,35 @@ class ImageTransformer(TransformerBase):
     def register_encoder(self, encoder=None):
         self.encoder = encoder
 
-    def transform_one(self, input):
+    def transform_one(self, file_path, grey_scale=True):
         '''
         Input is file name or numpy array
         :param args:
         :param kwargs:
         :return:
         '''
-        if type(input) is str:
-            img = self._read_img(input)
-        elif type(input) is np.array:
-            img = input
-        else:
-            raise Exception('Unsupported img input type {0}, supported inputs are file_name & numpy.array')
-        if img.shape == self.output_shape:
-            return img
-        return np.array(scipy.misc.imresize(img, self.output_shape))
+        ret = self._read_data_parallel([file_path], gray_scale=True)
+        if self.encoder is not None:
+            return self.encoder.encode(ret)
+        return ret
 
+    def transform_many(self, file_path_list, grey_scale=True):
+        '''
+        Input is file name or numpy array
+        :param args:
+        :param kwargs:
+        :return:
+        '''
+        ret = self._read_data_parallel(file_path_list,  gray_scale=True)
+        if self.encoder is not None:
+            return self.encoder.encode(ret)
+        return ret
 
-    def transform_all(self, folder_name, flatten=True, batch_size=256, multi_thread=True):
-        if self.output_shape is None:
-            raise Exception('Please configure the transformer before use')
+    def transform_all(self, folder_name, grey_scale=True, batch_size=256, multi_thread=True):
         if multi_thread:
             onlyfiles = [os.path.join(folder_name, f) for f in listdir(folder_name) if isfile(join(folder_name, f))]
             for chunk in chunks(onlyfiles, batch_size):
-                data = self._read_data_parallel(chunk, gray_scale=flatten, batch_size=batch_size)
+                data = self._read_data_parallel(chunk, gray_scale=grey_scale, batch_size=batch_size)
                 if self.encoder is None:
                     yield data
                 else:
@@ -76,6 +80,7 @@ class ImageTransformer(TransformerBase):
         batch = p.map(ImageTransformer._read_file_worker, patch)
         p.close()
         p.join()
+        # nothing being removed ...
         batch = [x for x in batch if x is not None]
         batch = np.array(batch)
         batch = batch.reshape((len(batch), np.prod(batch.shape[1:])))

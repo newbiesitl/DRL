@@ -14,6 +14,7 @@ class DataManager(object):
         self.raw_db_paths = None
         self.f_idx = {}
         self.idx_f = {}
+        self.vectors = None
 
     def get_file_name(self, idx):
         return self.idx_f[idx]
@@ -26,7 +27,14 @@ class DataManager(object):
             raise Exception('Config before use')
         mat_file_list = []
         for each_path in self.raw_db_paths:
+            print(each_path if 'py' not in each_path else '')
+            check = [
+                1 for f in listdir(each_path)
+                if (f[-3:] == 'jpg' and isfile(join(each_path, f)))
+            ]
+            print(len(check))
             mat_file_list += [os.path.join(each_path, f) for f in listdir(each_path) if f[-3:]=='jpg' and isfile(join(each_path, f))]
+        print(len(mat_file_list))
         self.f_idx = dict(zip(mat_file_list, range(len(mat_file_list))))
         self.idx_f = dict(zip(range(len(mat_file_list)), mat_file_list))
 
@@ -43,23 +51,27 @@ class DataManager(object):
 
     def load_raw_data(self, batch_size=5000):
         self.counter = 0
-        if isinstance(self.raw_db_paths, str):
-            self._img_to_numpy_array(self.raw_db_paths, self.output_shape, self.bin_db_path, self.db_name, batch_size)
-        elif isinstance(self.raw_db_paths, list):
+        if isinstance(self.raw_db_paths, list):
             for each_folder in self.raw_db_paths:
                 self._img_to_numpy_array(each_folder, self.output_shape, self.bin_db_path, self.db_name,
                                          batch_size)
         else:
             raise Exception('Unsupported format, only supports str and list (list of paths)')
+        return self.vectors
 
     def _img_to_numpy_array(self, folder_path, output_shape, save_folder_path, db_name, size=5000):
         t = ImageTransformer()
         t.configure(output_shape)
-        for chunk in t.transform_all(folder_path, flatten=True, batch_size=size, multi_thread=True):
+        for chunk in t.transform_all(folder_path, grey_scale=True, batch_size=size, multi_thread=True):
             if self.encoder:
                 ret = self.encoder.encode(chunk)
             else:
                 ret = chunk
+            if self.vectors is None:
+                self.vectors = ret
+            else:
+                print(self.vectors.shape, ret.shape)
+                self.vectors = np.concatenate((self.vectors, ret))
             np.save(os.path.join(self.bin_db_path, '_'.join([db_name, str(self.counter)])), ret)
             self.counter += 1
 

@@ -3,6 +3,7 @@ from apps.image_similarity.engine import DataManager
 from embedding.greedy_encoding import GreedyEncoder
 from utils.utils import ImageTransformer
 from alg.EKNN import EmbeddingkNN
+from sklearn.metrics.pairwise import euclidean_distances
 import numpy as np
 import shutil
 
@@ -48,8 +49,8 @@ def pipeline():
     '''
         RUN `load_raw_data` if first time
     '''
-    # dm.load_raw_data(batch_size=5000)
-    train = dm.load_dataset()
+    train = dm.load_raw_data(batch_size=5000)
+    # train = dm.load_dataset()
     dm.build_mapping()
 
     # =================================
@@ -70,12 +71,9 @@ def pipeline():
     query_folder = os.path.join(app_folder, 'query')
     answer_folder = os.path.join(app_folder, 'answer')
     while True:
-        c = input('Continue? \nType `q` to break')
-        if c == 'n':
-            break
         for batch in t.transform_all(query_folder):
             query = batch
-            print(query)
+            # print(query)
             print(query.shape)
             centroid = np.mean(query, axis=0)
             distances, indices = EMB.predict(np.array([centroid]))  # predict
@@ -83,13 +81,30 @@ def pipeline():
             # =================================
             # Make k-recommendations using kNN prediction
             # =================================
-            answer_file_list = []
             print("Making k-recommendations for each user...")
+
+
+            '''
+            The file name to indices mapping is wrong, debug this
+
+            Fix: don't load np array from file
+            generate np array from raw file and build mappings
+            '''
+
+            # backward mapping to map indices back to vectors, and check the euclidean distance, if the mapping is correct
+            # the euclidean distance of top 1 should be 0
             for i, (index, distance) in enumerate(zip(indices, distances)):
                 print("{0}: indices={1}, score={2}".format(i, index, distance))
                 answer_file_list = [dm.get_file_name(x) for x in index]
+                print(answer_file_list)
+                answer_vec= t.transform_many(answer_file_list)
+                answer_vec = np.concatenate((answer_vec, np.array([centroid])))
+                print(euclidean_distances(answer_vec))
                 for answer_file in answer_file_list:
                     shutil.copy(answer_file, os.path.join(answer_folder, str(dm.get_index(answer_file))+'.jpg'))
+        c = input('Continue? \nType `q` to break')
+        if c == 'q':
+            break
 
 if __name__ == "__main__":
     pipeline()
