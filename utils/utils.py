@@ -89,7 +89,6 @@ class ImageTransformer(TransformerBase):
         # nothing being removed ...
         batch = [x for x in batch if x is not None]
         batch = np.array(batch)
-        print(batch.shape)
         batch = batch.reshape((len(batch), np.prod(batch.shape[1:])))
         batch = batch.astype('float32') / 255.
         return batch
