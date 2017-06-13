@@ -11,7 +11,7 @@ model_folder = os.path.join(cur_dir, 'models')
 model_config = c_128
 train_model = False
 
-# TODO @charles TRY GREEDY DECODER, 4000-1000-300-1000-3000
+# TODO @charles TRY GREEDY DECODER, 3000-1000-300-1000-3000
 
 
 ae = GreedyEncoder(verbose=True)
