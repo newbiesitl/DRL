@@ -7,8 +7,8 @@ if color_img:
 else:
     input_dim = output_shape[1] * output_shape[0]
 use_bias = True
-greedy_epoch = 40
-fine_tuning_epoch = 40
+greedy_epoch = 10
+fine_tuning_epoch = 20
 activation_1 = 'linear'
 activation_2 = 'sigmoid'
 stack_activation = 'sigmoid'
@@ -56,6 +56,11 @@ c_1000_128['stack'].insert(0,
 }
 )
 c_1000_128['stack'][1]['input_dimension'] = 1024
+
+c_2000_1000 = c_1000_128
+c_2000_1000['stack'][0]['embedding_dimension'] = 2000
+c_2000_1000['stack'][1]['embedding_dimension'] = 1000
+c_2000_1000['stack'][1]['input_dimension'] = 2000
 
 c_2000_1000_300 = {
     'stack': [
