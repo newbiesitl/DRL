@@ -1,5 +1,5 @@
 import keras
-output_shape = (60, 40)
+output_shape = (100, 80)
 # output_shape = (28, 28)
 color_img = True
 if color_img:
@@ -158,3 +158,17 @@ c_4000_2000_1000_2000_4000['stack'].append(
             'epoch': greedy_epoch
         }
 )
+
+c_2000_1000_300_1000_2000 = c_4000_2000_1000_2000_4000
+c_2000_1000_300_1000_2000['stack'][0]['embedding_dimension'] = 2000
+c_2000_1000_300_1000_2000['stack'][1]['embedding_dimension'] = 1000
+c_2000_1000_300_1000_2000['stack'][2]['embedding_dimension'] = 300
+c_2000_1000_300_1000_2000['stack'][3]['embedding_dimension'] = 1000
+c_2000_1000_300_1000_2000['stack'][4]['embedding_dimension'] = 2000
+
+c_2000_1000_300_1000_2000['stack'][1]['input_dimension'] = 2000
+c_2000_1000_300_1000_2000['stack'][2]['input_dimension'] = 1000
+c_2000_1000_300_1000_2000['stack'][3]['input_dimension'] = 300
+c_2000_1000_300_1000_2000['stack'][4]['input_dimension'] = 1000
+
+

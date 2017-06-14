@@ -6,12 +6,17 @@ from prototype.color_ae.model_config.model_config import *
 cur_dir = os.path.dirname(__file__)
 data_folder = os.path.join(cur_dir, 'data')
 
-model_name = 'c_128'
-model_folder = os.path.join(cur_dir, 'models')
-model_config = c_128
-train_model = False
+'''
+Trained:
+c_2000_1000_300_1000_2000
+c_4000_2000_1000_2000_4000
+'''
 
-# TODO @charles TRY GREEDY DECODER, 3000-1000-300-1000-3000
+model_name = 'c_2000_1000_300_1000_2000'
+model_folder = os.path.join(cur_dir, 'models')
+model_config = c_2000_1000_300_1000_2000
+train_model = True
+
 
 
 ae = GreedyEncoder(verbose=True)
@@ -32,7 +37,7 @@ if train_model:
     ae.save(model_folder, model_name)
 else:
     ae.load(model_folder, model_name)
-visualize_result_ae(ae, dat, output_shape, color_img=True, random_sample=True, number_images=10)
+visualize_result_ae(ae, test, output_shape, color_img=True, random_sample=True, number_images=10)
 # Next step is to visualize the result from prediction
 # for batch in dat:
 #     print(batch.shape)
