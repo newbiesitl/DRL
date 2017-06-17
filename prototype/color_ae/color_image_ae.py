@@ -9,12 +9,15 @@ data_folder = os.path.join(cur_dir, 'data')
 '''
 Trained:
 c_2000_1000_300_1000_2000
-c_4000_2000_1000_2000_4000
+c_4000_2000_1000_2000_4000   # can't train this on mac book
 '''
 
-model_name = 'c_4000_2000_1000_2000_4000'
-model_folder = os.path.join(cur_dir, 'models')
-model_config = c_4000_2000_1000_2000_4000
+model_name = 'c_2000_1000_300_1000_2000'
+project_root = os.path.join(cur_dir, '..', '..')
+model_folder = os.path.join(project_root, 'models', model_name)
+if not os.path.exists(model_folder):
+    os.makedirs(model_folder)
+model_config = c_2000_1000_300_1000_2000
 train_model = True
 
 

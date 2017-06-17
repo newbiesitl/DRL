@@ -26,7 +26,8 @@ c_2000_1000_300 = {
             'bias_2': use_bias,
             'optimizer': optimizer,
             'loss_function': 'binary_crossentropy',
-            'epoch': greedy_epoch
+            'epoch': greedy_epoch,
+            'encode': True
         },
         {
             'input_dimension': 2048,
@@ -40,7 +41,8 @@ c_2000_1000_300 = {
             'bias_2': use_bias,
             'optimizer': optimizer,
             'loss_function': 'binary_crossentropy',
-            'epoch': greedy_epoch
+            'epoch': greedy_epoch,
+            'encode': True
         },
         {
             'input_dimension': 1024,
@@ -54,7 +56,8 @@ c_2000_1000_300 = {
             'bias_2': use_bias,
             'optimizer': optimizer,
             'loss_function': 'binary_crossentropy',
-            'epoch': greedy_epoch
+            'epoch': greedy_epoch,
+            'encode': True
         },
     ],
     'epoch': fine_tuning_epoch,
@@ -76,7 +79,7 @@ c_4000_2000_1000['stack'][-1]['embedding_dimension'] = 1000
 
 c_4000_2000_1000_2000_4000 = c_4000_2000_1000
 c_4000_2000_1000_2000_4000['stack'].append(
-{
+        {
             'input_dimension': 1000,
             'output_dimension': input_dim,
             'embedding_dimension': 2000,
@@ -88,7 +91,8 @@ c_4000_2000_1000_2000_4000['stack'].append(
             'bias_2': use_bias,
             'optimizer': optimizer,
             'loss_function': 'binary_crossentropy',
-            'epoch': greedy_epoch
+            'epoch': greedy_epoch,
+            'encode': False
         }
 )
 
@@ -105,6 +109,7 @@ c_4000_2000_1000_2000_4000['stack'].append(
             'bias_2': use_bias,
             'optimizer': optimizer,
             'loss_function': 'binary_crossentropy',
-            'epoch': greedy_epoch
+            'epoch': greedy_epoch,
+            'encode': False
         }
 )

@@ -1,5 +1,5 @@
 import keras
-output_shape = (100, 80)
+output_shape = (70, 50)
 # output_shape = (28, 28)
 color_img = True
 if color_img:
