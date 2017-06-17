@@ -157,13 +157,18 @@ class GreedyEncoder(EmbeddingBase):
 
         self.decoder = Sequential()
         # this is the input layer
+        # self.decoder.add(
+        #     Dense(self.blue_print['stack'][-1]['embedding_dimension'],
+        #           input_shape=(self.blue_print['stack'][-1]['embedding_dimension'],),
+        #           use_bias=self.use_bias
+        #           )
+        # )
         self.decoder.add(
-            Dense(self.blue_print['stack'][-1]['embedding_dimension'],
-                  input_shape=(self.blue_print['stack'][-1]['embedding_dimension'],),
-                  use_bias=self.use_bias
-                  )
+            Dense(self.blue_print['stack'][-1]['output_dimension'],
+                  activation=self.blue_print['stack'][-1]['activation_2'],
+                  weights=output_layer.get_weights() if self.use_bias else [output_layer.get_weights()[0]],
+                  use_bias=self.use_bias)
         )
-        self.decoder.add(Dense(self.blue_print['stack'][-1]['output_dimension'], activation=self.blue_print['stack'][-1]['activation_2'], weights=output_layer.get_weights() if self.use_bias else [output_layer.get_weights()[0]], use_bias=self.use_bias))
 
     def encode(self, x):
         return self.encoder.predict(x)

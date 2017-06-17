@@ -12,9 +12,9 @@ c_2000_1000_300_1000_2000
 c_4000_2000_1000_2000_4000
 '''
 
-model_name = 'c_2000_1000_300_1000_2000'
+model_name = 'c_4000_2000_1000_2000_4000'
 model_folder = os.path.join(cur_dir, 'models')
-model_config = c_2000_1000_300_1000_2000
+model_config = c_4000_2000_1000_2000_4000
 train_model = True
 
 
