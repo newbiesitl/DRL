@@ -9,13 +9,14 @@ data_folder = os.path.join(project_root, 'data', 'images', 'women')
 
 '''
 Trained:
-c_2000_1000_300_1000_2000  #
+c_2000_1000_300_1000_2000  # working with 40 k 60*40 , next step is to train 100 * 80
+c_2000_1000_800_1000_2000  # compare this with 300 hidden
 c_128   # for testing
 c_1000_128   # for testing
 c_2000_1000_300
 '''
 
-model_config = c_2000_1000_300_1000_2000
+model_config = c_2000_1000_800_1000_2000
 model_folder_name = '_shape_'.join([model_config['name'], '_'.join([str(x) for x in output_shape])])
 model_name = model_config['name']
 model_folder = os.path.join(project_root, 'models', model_folder_name)
@@ -24,7 +25,7 @@ if not os.path.exists(model_folder):
 # print(len(model_config['stack']))
 # print(model_config)
 # exit()
-train_model = False
+train_model = True
 
 
 
@@ -48,8 +49,7 @@ if train_model:
     ae.save(model_folder, model_name)
 else:
     ae.load(model_folder, model_name)
+
+print('first model finish!')
 visualize_result_ae(ae, test, output_shape, color_img=True, random_sample=True, number_images=10)
-# Next step is to visualize the result from prediction
-# for batch in dat:
-#     print(batch.shape)
 
