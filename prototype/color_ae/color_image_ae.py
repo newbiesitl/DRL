@@ -4,32 +4,40 @@ from embedding.greedy_encoding import GreedyEncoder
 from prototype.color_ae.model_config.model_config import *
 
 cur_dir = os.path.dirname(__file__)
-data_folder = os.path.join(cur_dir, 'data')
+project_root = os.path.join(cur_dir, '..', '..')
+data_folder = os.path.join(project_root, 'data', 'images', 'women')
 
 '''
 Trained:
-c_2000_1000_300_1000_2000
-c_4000_2000_1000_2000_4000   # can't train this on mac book
+c_2000_1000_300_1000_2000  #
+c_128   # for testing
+c_1000_128   # for testing
+c_2000_1000_300
 '''
 
-model_name = 'c_2000_1000_300_1000_2000'
-project_root = os.path.join(cur_dir, '..', '..')
-model_folder = os.path.join(project_root, 'models', model_name)
+model_config = c_2000_1000_300_1000_2000
+model_folder_name = '_shape_'.join([model_config['name'], '_'.join([str(x) for x in output_shape])])
+model_name = model_config['name']
+model_folder = os.path.join(project_root, 'models', model_folder_name)
 if not os.path.exists(model_folder):
     os.makedirs(model_folder)
-model_config = c_2000_1000_300_1000_2000
-train_model = True
+# print(len(model_config['stack']))
+# print(model_config)
+# exit()
+train_model = False
 
 
 
 ae = GreedyEncoder(verbose=True)
 t =ImageTransformer()
 t.configure(output_shape)
-dat = t.transform_all(data_folder, grey_scale=False, batch_size=20000)
-dat = list(dat)[0] # get the first batch from generator
-divider = int(len(dat)*0.9)
-test = dat[divider:]
-train = dat[:divider]
+data = []
+for dat in t.transform_all(data_folder, grey_scale=False, batch_size=50000):
+    data = dat # get the first batch from generator
+    break
+divider = int(len(data)*0.9)
+test = data[divider:]
+train = data[:divider]
 ae.set_training_data(train, train)
 ae.set_test_data(test, test)
 ae.compile(use_bias=True)

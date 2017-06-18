@@ -35,11 +35,11 @@ class GreedyEncoder(EmbeddingBase):
         if kwargs.get('regularizer_1', None) is not None:
             c_1['activity_regularizer'] = kwargs.get('regularizer_1')
         if kwargs.get('bias_1', None) is not None:
-            c_1['bias'] = kwargs.get('bias_1')
+            c_1['use_bias'] = kwargs.get('bias_1')
         if kwargs.get('regularizer_2', None) is not None:
             c_2['activity_regularizer'] = kwargs.get('regularizer_2')
         if kwargs.get('bias_2', None) is not None:
-            c_2['bias'] = kwargs.get('bias_2')
+            c_2['use_bias'] = kwargs.get('bias_2')
         input_layer = Dense(i_dim, input_shape=(i_dim,))
         encoding_layer = Dense(e_dim, activation=activation_1, **c_1)
         decoding_layer = Dense(o_dim, activation=activation_2, **c_2)
@@ -107,20 +107,22 @@ class GreedyEncoder(EmbeddingBase):
             if model_config.get('activity_regularizer_2', None) is not None:
                 layer_config['regularizer_2'] = model_config['activity_regularizer_2']
             optimizer = model_config['optimizer']
-            ret_obj = self._get_encoder(self.encoded_train_input_stack[-1], self._y_train_set,
-                                        self.encoded_test_input_stack[-1],
-                                        self._y_test_set, i_dim, o_dim, e_dim, activation_1, activation_2, loss_function, epoch,
-                                        optimizer,
-                                        **layer_config)
-            self.encoding_stack.append(ret_obj['model'])
-            self.encoder_layer_stack.append(ret_obj['encode'])
+            greedy_AE_object = self._get_encoder(
+                self.encoded_train_input_stack[-1], self._y_train_set,
+                self.encoded_test_input_stack[-1],
+                self._y_test_set, i_dim, o_dim, e_dim, activation_1, activation_2, loss_function, epoch,
+                optimizer,
+                **layer_config
+            )
+            self.encoding_stack.append(greedy_AE_object['model']) # input-embed-input tensor
+            self.encoder_layer_stack.append(greedy_AE_object['encode']) # input-embed tensor
             # wasting space here, I just need to keep the first layer's input and use it in the stacked arch
             # todo @charles, change this input_layer_stack to a single input layer
-            self.input_layer_stack.append(ret_obj['input'])
+            self.input_layer_stack.append(greedy_AE_object['input'])
             self.encoded_test_input_stack.append(self.encoding_stack[-1].predict(self.encoded_test_input_stack[-1]))
             self.encoded_train_input_stack.append(self.encoding_stack[-1].predict(self.encoded_train_input_stack[-1]))
 
-        # the input layer of stacked encoder
+        # the input layer of stacked encoder, do I need to read weights here?
         input_layer = Dense(self.blue_print['stack'][0]['input_dimension'],
                             input_shape=(self.blue_print['stack'][0]['input_dimension'],),
                             weights=self.input_layer_stack[0].get_weights() if self.use_bias else [self.input_layer_stack[0].get_weights()[0]], use_bias=self.use_bias)
@@ -132,12 +134,17 @@ class GreedyEncoder(EmbeddingBase):
             encoded = Dense(self.blue_print['stack'][i]['embedding_dimension'], weights=weights, use_bias=self.use_bias)
             self.encoder_decoder.add(encoded)
 
-        output_layer = Dense(self.blue_print['stack'][-1]['output_dimension'], activation=self.blue_print['stack'][-1]['activation_2'])
+        output_layer = Dense(
+            self.blue_print['stack'][-1]['output_dimension'],
+            activation=self.blue_print['stack'][-1]['activation_2']
+        )
         self.encoder_decoder.add(output_layer)
         self.encoder_decoder.compile(
             optimizer=self.blue_print['optimizer'],
             loss=self.blue_print['loss_function']
         )
+
+        # the fine tuning does not converge!
         self.encoder_decoder.fit(
             (self._x_train_set),
             (self._x_train_set),
@@ -157,18 +164,13 @@ class GreedyEncoder(EmbeddingBase):
 
         self.decoder = Sequential()
         # this is the input layer
-        # self.decoder.add(
-        #     Dense(self.blue_print['stack'][-1]['embedding_dimension'],
-        #           input_shape=(self.blue_print['stack'][-1]['embedding_dimension'],),
-        #           use_bias=self.use_bias
-        #           )
-        # )
         self.decoder.add(
-            Dense(self.blue_print['stack'][-1]['output_dimension'],
-                  activation=self.blue_print['stack'][-1]['activation_2'],
-                  weights=output_layer.get_weights() if self.use_bias else [output_layer.get_weights()[0]],
-                  use_bias=self.use_bias)
+            Dense(self.blue_print['stack'][-1]['embedding_dimension'],
+                  input_shape=(self.blue_print['stack'][-1]['embedding_dimension'],),
+                  use_bias=self.use_bias
+                  )
         )
+        self.decoder.add(Dense(self.blue_print['stack'][-1]['output_dimension'], activation=self.blue_print['stack'][-1]['activation_2'], weights=output_layer.get_weights() if self.use_bias else [output_layer.get_weights()[0]], use_bias=self.use_bias))
 
     def encode(self, x):
         return self.encoder.predict(x)
