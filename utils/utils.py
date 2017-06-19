@@ -48,7 +48,7 @@ class ImageTransformer(TransformerBase):
         '''
         if self.output_shape is None:
             raise Exception("output shape is not configured")
-        ret = self._read_data_parallel([file_path], gray_scale=True)
+        ret = self._read_data_parallel([file_path], gray_scale=grey_scale)
         if self.encoder is not None:
             return self.encoder.encode(ret)
         return ret
@@ -62,7 +62,7 @@ class ImageTransformer(TransformerBase):
         '''
         if self.output_shape is None:
             raise Exception("output shape is not configured")
-        ret = self._read_data_parallel(file_path_list,  gray_scale=True)
+        ret = self._read_data_parallel(file_path_list,  gray_scale=grey_scale)
         if self.encoder is not None:
             return self.encoder.encode(ret)
         return ret
@@ -105,7 +105,10 @@ class ImageTransformer(TransformerBase):
     # read_img: read image, and convert to numpy
     @staticmethod
     def _read_img(img_filename, gray_scale=False):
-        img = np.array(scipy.misc.imread(img_filename, flatten=gray_scale))
+        if gray_scale:
+            img = np.array(scipy.misc.imread(img_filename, flatten=gray_scale))
+        else:
+            img = np.array(scipy.misc.imread(img_filename, mode='RGB'))
         return img
 
 

@@ -1,3 +1,8 @@
+'''
+Author
+Yubo Zhou
+yubo@cse.yorku.ca
+'''
 from utils.utils import ImageTransformer
 import numpy as np
 import os
@@ -72,7 +77,7 @@ class DataManager(object):
             else:
                 print(self.vectors.shape, ret.shape)
                 self.vectors = np.concatenate((self.vectors, ret))
-            np.save(os.path.join(self.bin_db_path, '_'.join([db_name, str(self.counter)])), ret)
+            np.save(os.path.join(save_folder_path, '_'.join([db_name, str(self.counter)])), ret)
             self.counter += 1
 
     def load_dataset(self):
