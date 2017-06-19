@@ -14,14 +14,14 @@ The indexing is wrong, because use the same picture as query won't return itself
 '''
 
 
-def pipeline():
+def InitApp():
     cur_dir = os.path.dirname(__file__)
     project_root = os.path.join(cur_dir, '..', '..')
     app_folder = os.path.join(project_root, 'apps', 'image_similarity')
-    db_folder = os.path.join(app_folder, 'db')
-    raw_db_folder = os.path.join(db_folder, 'img')
+    db_folder = os.path.join(project_root, 'data')
+    raw_db_folder = os.path.join(db_folder, 'images')
 
-    bin_db_folder = os.path.join(db_folder, 'mat')
+    bin_db_folder = os.path.join(raw_db_folder, 'mat')
     raw_data_paths = [
         os.path.join(raw_db_folder, 'men'),
         os.path.join(raw_db_folder, 'women')
@@ -37,7 +37,7 @@ def pipeline():
     }
     # Initialize encoder
     encoder = GreedyEncoder()
-    encoder.load(model_path, '_'.join(['c', model_name]))
+    encoder.load(model_path, model_name)
 
 
     t = ImageTransformer()
@@ -100,4 +100,4 @@ def pipeline():
             break
 
 if __name__ == "__main__":
-    pipeline()
+    InitApp()
