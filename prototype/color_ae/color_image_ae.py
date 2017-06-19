@@ -19,8 +19,9 @@ c_2000_1000_300
 
 model_config = c_2000_1000_300_1000_2000
 model_folder_name = '_shape_'.join([model_config['name'], '_'.join([str(x) for x in output_shape])])
+model_folder_name = '_'.join([model_folder_name, activation_1])
 model_name = model_config['name']
-model_folder = os.path.join(project_root, 'models', model_folder_name)
+model_folder = os.path.join(project_root, 'models', 'vision', model_folder_name)
 if not os.path.exists(model_folder):
     os.makedirs(model_folder)
 # print(len(model_config['stack']))
@@ -35,7 +36,8 @@ ae = GreedyEncoder(verbose=True)
 t =ImageTransformer()
 t.configure(output_shape)
 data = []
-for dat in t.transform_all(data_folder, grey_scale=False, batch_size=50000):
+
+for dat in t.transform_all(data_folder, grey_scale=False, batch_size=5000 if train_model is False else 50000):
     data = dat # get the first batch from generator
     break
 divider = int(len(data)*0.9)
@@ -51,7 +53,7 @@ if train_model:
     ae.save(model_folder, model_name)
 else:
     ae.load(model_folder, model_name)
+print('finish loading model.')
 
-print('first model finish!')
 visualize_result_ae(ae, test, output_shape, color_img=True, random_sample=True, number_images=10)
 

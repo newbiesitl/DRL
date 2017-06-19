@@ -9,7 +9,7 @@ else:
 use_bias = True
 greedy_epoch = 2
 fine_tuning_epoch = 6
-activation_1 = 'relu'
+activation_1 = 'linear'
 activation_2 = 'sigmoid'
 stack_activation = 'sigmoid'
 optimizer = keras.optimizers.Adadelta()
