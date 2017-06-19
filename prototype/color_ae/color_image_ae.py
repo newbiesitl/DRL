@@ -3,9 +3,10 @@ import os
 from embedding.greedy_encoding import GreedyEncoder
 from prototype.color_ae.model_config.model_config import *
 
+
 cur_dir = os.path.dirname(__file__)
 project_root = os.path.join(cur_dir, '..', '..')
-data_folder = os.path.join(project_root, 'data', 'images', 'women')
+data_folder = os.path.join(project_root, 'data', 'images', 'all')
 
 '''
 Trained:
@@ -16,7 +17,7 @@ c_1000_128   # for testing
 c_2000_1000_300
 '''
 
-model_config = c_2000_1000_800_1000_2000
+model_config = c_2000_1000_300_1000_2000
 model_folder_name = '_shape_'.join([model_config['name'], '_'.join([str(x) for x in output_shape])])
 model_name = model_config['name']
 model_folder = os.path.join(project_root, 'models', model_folder_name)
@@ -26,6 +27,7 @@ if not os.path.exists(model_folder):
 # print(model_config)
 # exit()
 train_model = True
+# train_model = False
 
 
 

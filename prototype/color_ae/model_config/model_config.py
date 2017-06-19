@@ -7,9 +7,9 @@ if color_img:
 else:
     input_dim = output_shape[1] * output_shape[0]
 use_bias = True
-greedy_epoch = 6
+greedy_epoch = 2
 fine_tuning_epoch = 12
-activation_1 = 'linear'
+activation_1 = 'selu'
 activation_2 = 'sigmoid'
 stack_activation = 'sigmoid'
 optimizer = keras.optimizers.Adadelta()
@@ -301,7 +301,7 @@ c_2000_1000_300_1000_2000 = {
 
 
 c_2000_1000_800_1000_2000 = {
-    'name': 'c_2000_1000_300_1000_2000',
+    'name': 'c_2000_1000_800_1000_2000',
     'stack': [
         {
             'input_dimension': input_dim,
