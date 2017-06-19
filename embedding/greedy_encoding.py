@@ -31,7 +31,7 @@ class GreedyEncoder(EmbeddingBase):
         self.decoder_output_shape = None
         super().__init__()
 
-    def _get_encoder(self, x_train, y_train, x_test, y_test, i_dim, o_dim, e_dim, activation_1, activation_2, loss_function, epoch, optimizer, kernel_initializer='lecun_normal', dropout=AlphaDropout, dropout_rate=0.1, **kwargs):
+    def _get_encoder(self, x_train, y_train, x_test, y_test, i_dim, o_dim, e_dim, activation_1, activation_2, loss_function, epoch, optimizer, kernel_initializer='lecun_normal', dropout=None, dropout_rate=None, **kwargs):
         c_1, c_2 = {}, {}
         if kwargs.get('regularizer_1', None) is not None:
             c_1['activity_regularizer'] = kwargs.get('regularizer_1')
@@ -46,11 +46,14 @@ class GreedyEncoder(EmbeddingBase):
         decoding_layer = Dense(o_dim, activation=activation_2, kernel_initializer=kernel_initializer, **c_2)
         autoencoder = Sequential()
         autoencoder.add(input_layer)
-        autoencoder.add(dropout(dropout_rate))
+        if dropout is not None and dropout_rate is not None:
+            autoencoder.add(dropout(dropout_rate))
         autoencoder.add(encoding_layer)
-        autoencoder.add(dropout(dropout_rate))
+        if dropout is not None and dropout_rate is not None:
+            autoencoder.add(dropout(dropout_rate))
         autoencoder.add(decoding_layer)
-        autoencoder.add(dropout(dropout_rate))
+        if dropout is not None and dropout_rate is not None:
+            autoencoder.add(dropout(dropout_rate))
 
         optimizer = optimizer
         autoencoder.compile(optimizer=optimizer, loss=loss_function)
@@ -116,8 +119,6 @@ class GreedyEncoder(EmbeddingBase):
             )
             self.encoding_stack.append(greedy_AE_object['model']) # input-embed-input tensor
             self.encoder_layer_stack.append(greedy_AE_object['encode']) # input-embed tensor
-            # wasting space here, I just need to keep the first layer's input and use it in the stacked arch
-            # todo @charles, change this input_layer_stack to a single input layer
             self.input_layer_stack.append(greedy_AE_object['input'])
             self.encoded_test_input_stack.append(self.encoding_stack[-1].predict(self.encoded_test_input_stack[-1]))
             self.encoded_train_input_stack.append(self.encoding_stack[-1].predict(self.encoded_train_input_stack[-1]))
@@ -128,22 +129,25 @@ class GreedyEncoder(EmbeddingBase):
                             weights=self.input_layer_stack[0].get_weights() if self.use_bias else [self.input_layer_stack[0].get_weights()[0]], use_bias=self.use_bias)
         self.encoder_decoder = Sequential()
         self.encoder_decoder.add(input_layer)
-        self.encoder_decoder.add(AlphaDropout(0.1))
+        # todo @charles add dropout option
+        # self.encoder_decoder.add(AlphaDropout(0.1))
         for i in range(len(self.encoder_layer_stack)):
             # weights = self.encoder_layer_stack[i].get_weights() if self.use_bias else [self.encoder_layer_stack[i].get_weights()[0], np.zeros((self.encoder_layer_stack[i].get_weights()[0].shape[1]))]
             weights = self.encoder_layer_stack[i].get_weights() if self.use_bias else [self.encoder_layer_stack[i].get_weights()[0]]
             encoded = Dense(self.blue_print['stack'][i]['embedding_dimension'], weights=weights, use_bias=self.use_bias)
             self.encoder_decoder.add(encoded)
+            # todo @charles add dropout option
             dropout = self.blue_print['stack'][i].get('dropout', AlphaDropout)
             dropout_rate = self.blue_print['stack'][i].get('dropout_rate', 0.1)
-            self.encoder_decoder.add(dropout(dropout_rate))
+            # self.encoder_decoder.add(dropout(dropout_rate))
 
         output_layer = Dense(
             self.blue_print['stack'][-1]['output_dimension'],
             activation=self.blue_print['stack'][-1]['activation_2']
         )
         self.encoder_decoder.add(output_layer)
-        self.encoder_decoder.add(AlphaDropout(0.1))
+        # todo @charles add dropout option
+        # self.encoder_decoder.add(AlphaDropout(0.1))
         self.encoder_decoder.compile(
             optimizer=self.blue_print['optimizer'],
             loss=self.blue_print['loss_function']

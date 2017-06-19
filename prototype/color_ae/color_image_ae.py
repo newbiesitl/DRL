@@ -26,8 +26,8 @@ if not os.path.exists(model_folder):
 # print(len(model_config['stack']))
 # print(model_config)
 # exit()
+# train_model = True
 train_model = True
-# train_model = False
 
 
 

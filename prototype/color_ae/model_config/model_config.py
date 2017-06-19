@@ -8,8 +8,8 @@ else:
     input_dim = output_shape[1] * output_shape[0]
 use_bias = True
 greedy_epoch = 2
-fine_tuning_epoch = 12
-activation_1 = 'selu'
+fine_tuning_epoch = 6
+activation_1 = 'relu'
 activation_2 = 'sigmoid'
 stack_activation = 'sigmoid'
 optimizer = keras.optimizers.Adadelta()
