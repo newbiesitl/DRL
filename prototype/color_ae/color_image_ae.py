@@ -28,7 +28,7 @@ if not os.path.exists(model_folder):
 # print(model_config)
 # exit()
 # train_model = True
-train_model = True
+train_model = False
 
 
 
