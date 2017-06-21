@@ -2,7 +2,7 @@ import keras
 from keras.layers import *
 
 
-output_shape = (60, 40)
+output_shape = (64, 40)
 # output_shape = (28, 28)
 input_dim = output_shape[1] * output_shape[0]
 use_bias = True
@@ -14,14 +14,14 @@ stack_activation = 'sigmoid'
 optimizer = keras.optimizers.Adadelta()
 # optimizer = keras.optimizers.Adagrad()
 
-input_shape=(100,100,3)
+input_shape=(64,40,3)
 embedded_input_shape=()
 c_toy = {
     'input_layer':
     {
         'conv': Conv2D(filters=32, kernel_size=(5, 5), strides=(2,2),
                        activation='relu', padding='same',
-                       kernel_initializer=keras.initializers.lecun_normal(),
+                       kernel_initializer=keras.initializers.lecun_uniform(),
                        input_shape=input_shape),
         'pooling': MaxPooling2D(pool_size=(2, 2)),
         'dropout': Dropout(0.25)
@@ -30,7 +30,7 @@ c_toy = {
     {
         'conv': Conv2D(filters=32, kernel_size=(5, 5), strides=(2,2),
                        activation='relu', padding='same',
-                       kernel_initializer=keras.initializers.lecun_normal(),
+                       kernel_initializer=keras.initializers.lecun_uniform(),
                        input_shape=input_shape),
         'pooling': MaxPooling2D(pool_size=(2, 2)),
         'dropout': Dropout(0.25)
@@ -38,12 +38,12 @@ c_toy = {
     'encoding_stack': [
         Conv2D(filters=16, kernel_size=(3, 3), strides=(2,2),
                activation='relu', padding='same',
-               kernel_initializer=keras.initializers.lecun_normal()),
+               kernel_initializer=keras.initializers.lecun_uniform()),
     ],
     'decoding_stack': [
         Conv2D(filters=16, kernel_size=(3, 3), strides=(2,2),
                activation='relu', padding='same',
-               kernel_initializer=keras.initializers.lecun_normal()),
+               kernel_initializer=keras.initializers.lecun_uniform()),
     ]
 }
 
