@@ -1,20 +1,21 @@
 import keras
 from keras.layers import *
 
-
-output_shape = (64, 40)
+width = 64
+height = 96
+output_shape = (height, width)
 # output_shape = (28, 28)
 input_dim = output_shape[1] * output_shape[0]
 use_bias = True
 greedy_epoch = 20
 fine_tuning_epoch = 40
-activation_1 = 'linear'
+activation_1 = 'relu'
 activation_2 = 'sigmoid'
 stack_activation = 'sigmoid'
 optimizer = keras.optimizers.Adadelta()
 # optimizer = keras.optimizers.Adagrad()
 
-input_shape=(64,40,3)
+input_shape=(height,width,3)
 embedded_input_shape=()
 c_toy = {
     'input_layer':
