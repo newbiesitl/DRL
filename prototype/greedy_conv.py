@@ -30,13 +30,13 @@ print(test.shape)
 ae = Sequential()
 encoder = Sequential()
 decoder = Sequential()
-x = Conv2D(16, (5, 5), activation=activation_1, padding='same', input_shape=input_shape)
+x = Conv2D(16, (3, 3), activation=activation_1, padding='same', input_shape=input_shape)
 encoder.add(x)
 ae.add(x)
 x = MaxPooling2D((2, 2), padding='same')
 encoder.add(x)
 ae.add(x)
-x = Conv2D(6, (5, 5), activation=activation_1, padding='same')
+x = Conv2D(6, (3, 3), activation=activation_1, padding='same')
 encoder.add(x)
 ae.add(x)
 x = MaxPooling2D((2, 2), padding='same')
@@ -44,7 +44,7 @@ encoder.add(x)
 ae.add(x)
 
 # at this point the representation is (4, 4, 8) i.e. 128-dimensional
-x = Conv2D(6, (5, 5), activation=activation_1, padding='same')
+x = Conv2D(6, (3, 3), activation=activation_1, padding='same')
 # decoded_input = Conv2D(8, (3, 3), activation=activation_1, padding='same', input_shape=encoder.layers[-1].input_shape)
 # todo @charles, reload the decoder input weights after AE is trained
 # decoder.add(decoded_input)
@@ -53,7 +53,7 @@ x = UpSampling2D((2, 2))
 # decoder.add(x)
 ae.add(x)
 
-x = Conv2D(16, (5, 5), activation=activation_1)
+x = Conv2D(16, (3, 3), activation=activation_1)
 # decoder.add(x)
 ae.add(x)
 x = UpSampling2D((2, 2))
@@ -65,10 +65,10 @@ x = Conv2D(3, (3, 3), activation=activation_2, padding='same')
 
 ae.add(x)
 # decoded = UpSampling2D((1,2))(decoded)
-top_padding = 4
-bottom_padding = 4
-left_padding = 4
-right_padding = 4
+top_padding = 2
+bottom_padding = 2
+left_padding = 2
+right_padding = 2
 padding = ((top_padding, bottom_padding), (left_padding, right_padding))
 ae.add(ZeroPadding2D(padding))
 # ZeroPadding2D(())
