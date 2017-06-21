@@ -2,8 +2,28 @@ from keras.layers import Dense
 from keras.models import Sequential
 from keras.optimizers import Adadelta
 from keras.losses import binary_crossentropy
-input_dim = 2000
+from utils.utils import *
+from embedding.model_config import *
+
+cur_dir = os.path.dirname(__file__)
+project_root = os.path.join(cur_dir, '..')
+data_folder = os.path.join(project_root, 'data', 'images', 'all')
+
+train_model = True
+
+t =ImageTransformer()
+t.configure(output_shape)
+data = []
+for dat in t.transform_all(data_folder, grey_scale=False, batch_size=10 if not train_model else 50):
+    data = dat # get the first batch from generator
+    break
+
+
+exit()
+
+input_dim = output_shape[0] * output_shape[1]
 output_dim = input_dim
+stack_config = None
 encoder_stack = [
     Dense(1000, activation='linear', input_shape=(input_dim,)),
     Dense(500, activation='linear'),
@@ -15,7 +35,7 @@ decoder_stack = [
     Dense(input_dim, activation='sigmoid')
 ]
 # todo @charles need to work on the output data
-X, Y = [], []
+X, Y = data, data
 encoder = Sequential()
 decoder = Sequential()
 AE = Sequential()

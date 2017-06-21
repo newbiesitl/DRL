@@ -1,4 +1,7 @@
 import keras
+from keras.layers import *
+
+
 output_shape = (60, 40)
 # output_shape = (28, 28)
 input_dim = output_shape[1] * output_shape[0]
@@ -11,8 +14,41 @@ stack_activation = 'sigmoid'
 optimizer = keras.optimizers.Adadelta()
 # optimizer = keras.optimizers.Adagrad()
 
+input_shape=(100,100,3)
+embedded_input_shape=()
+c_toy = {
+    'input_layer':
+    {
+        'conv': Conv2D(filters=32, kernel_size=(5, 5), strides=(2,2),
+                       activation='relu', padding='same',
+                       kernel_initializer=keras.initializers.lecun_normal(),
+                       input_shape=input_shape),
+        'pooling': MaxPooling2D(pool_size=(2, 2)),
+        'dropout': Dropout(0.25)
+    },
+    'embedded_input_layer':
+    {
+        'conv': Conv2D(filters=32, kernel_size=(5, 5), strides=(2,2),
+                       activation='relu', padding='same',
+                       kernel_initializer=keras.initializers.lecun_normal(),
+                       input_shape=input_shape),
+        'pooling': MaxPooling2D(pool_size=(2, 2)),
+        'dropout': Dropout(0.25)
+    },
+    'encoding_stack': [
+        Conv2D(filters=16, kernel_size=(3, 3), strides=(2,2),
+               activation='relu', padding='same',
+               kernel_initializer=keras.initializers.lecun_normal()),
+    ],
+    'decoding_stack': [
+        Conv2D(filters=16, kernel_size=(3, 3), strides=(2,2),
+               activation='relu', padding='same',
+               kernel_initializer=keras.initializers.lecun_normal()),
+    ]
+}
 
-c_2000_1000_300 = {
+
+f_2000_1000_300 = {
     'stack': [
         {
             'input_dimension': input_dim,
@@ -65,22 +101,22 @@ c_2000_1000_300 = {
     'loss_function': 'binary_crossentropy'
 }
 
-c_2000_1000_500 = c_2000_1000_300
-c_2000_1000_500['stack'][-1]['embedding_dimension'] = 500
-c_2000_1000_500_1000_2000 = c_2000_1000_500
+f_2000_1000_500 = f_2000_1000_300
+f_2000_1000_500['stack'][-1]['embedding_dimension'] = 500
+f_2000_1000_500_1000_2000 = f_2000_1000_500
 
 
 
-c_4000_2000_1000 = c_2000_1000_300
-c_4000_2000_1000['stack'][0]['embedding_dimension'] = 4000
-c_4000_2000_1000['stack'][1]['input_dimension'] = 4000
-c_4000_2000_1000['stack'][1]['embedding_dimension'] = 2000
-c_4000_2000_1000['stack'][-1]['input_dimension'] = 2000
-c_4000_2000_1000['stack'][-1]['embedding_dimension'] = 1000
+f_4000_2000_1000 = f_2000_1000_300
+f_4000_2000_1000['stack'][0]['embedding_dimension'] = 4000
+f_4000_2000_1000['stack'][1]['input_dimension'] = 4000
+f_4000_2000_1000['stack'][1]['embedding_dimension'] = 2000
+f_4000_2000_1000['stack'][-1]['input_dimension'] = 2000
+f_4000_2000_1000['stack'][-1]['embedding_dimension'] = 1000
 
 
-c_4000_2000_1000_2000_4000 = c_4000_2000_1000
-c_4000_2000_1000_2000_4000['stack'].append(
+f_4000_2000_1000_2000_4000 = f_4000_2000_1000
+f_4000_2000_1000_2000_4000['stack'].append(
         {
             'input_dimension': 1000,
             'output_dimension': input_dim,
@@ -98,7 +134,7 @@ c_4000_2000_1000_2000_4000['stack'].append(
         }
 )
 
-c_4000_2000_1000_2000_4000['stack'].append(
+f_4000_2000_1000_2000_4000['stack'].append(
 {
             'input_dimension': 2000,
             'output_dimension': input_dim,

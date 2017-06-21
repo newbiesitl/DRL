@@ -89,7 +89,9 @@ class ImageTransformer(TransformerBase):
         # nothing being removed ...
         batch = [x for x in batch if x is not None]
         batch = np.array(batch)
-        batch = batch.reshape((len(batch), np.prod(batch.shape[1:])))
+        if gray_scale:
+            # if gray scale, flatten to 1-d array
+            batch = batch.reshape((len(batch), np.prod(batch.shape[1:])))
         batch = batch.astype('float32') / 255.
         return batch
 
@@ -127,8 +129,10 @@ def visualize_result_ae(ae, test, shape, random_sample=True, number_images=10, c
     # encode and decode some digits
     # note that we take them from the *test* set
 
-
-    decoded_imgs = ae.encode_decode(test)
+    try:
+        decoded_imgs = ae.encode_decode(test)
+    except AttributeError:
+        decoded_imgs = ae.predict(test)
     print(test.shape)
     print(decoded_imgs.shape)
     print(type(decoded_imgs), type(decoded_imgs[0]))

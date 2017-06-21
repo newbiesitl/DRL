@@ -20,7 +20,7 @@ def main():
     model_name = 'c_4000_2000_1000_2000_4000'
     random_sample = True
     training_set_size = 50
-    config = c_4000_2000_1000_2000_4000
+    config = f_4000_2000_1000_2000_4000
 
     # create an transformer
     t = ImageTransformer()
