@@ -21,7 +21,7 @@ try:
     shutil.rmtree(tensor_board_path)
 except:
     pass
-train_model = True
+train_model = False
 model_folder = os.path.join(project_root, 'models', 'vision')
 model_name = 'bn_conv_all'
 t =ImageTransformer()
