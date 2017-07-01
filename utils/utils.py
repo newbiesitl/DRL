@@ -53,7 +53,7 @@ class ImageTransformer(TransformerBase):
             return self.encoder.encode(ret)
         return ret
 
-    def transform_many(self, file_path_list, grey_scale=True):
+    def transform_many(self, file_path_list, grey_scale=False, flatten=False):
         '''
         Input is file name or numpy array
         :param args:
@@ -62,7 +62,7 @@ class ImageTransformer(TransformerBase):
         '''
         if self.output_shape is None:
             raise Exception("output shape is not configured")
-        ret = self._read_data_parallel(file_path_list,  gray_scale=grey_scale)
+        ret = self._read_data_parallel(file_path_list,  gray_scale=grey_scale, flatten=flatten)
         if self.encoder is not None:
             return self.encoder.encode(ret)
         return ret

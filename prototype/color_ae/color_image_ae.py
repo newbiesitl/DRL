@@ -1,7 +1,7 @@
 from utils.utils import *
 import os
 from embedding.greedy_encoding import GreedyEncoder
-from model_configs.model_config import *
+from model_configs.ae import *
 
 
 cur_dir = os.path.dirname(__file__)
@@ -29,7 +29,7 @@ if not os.path.exists(model_folder):
 # print(model_config)
 # exit()
 # train_model = True
-train_model = True
+train_model = False
 
 
 

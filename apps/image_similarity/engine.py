@@ -67,7 +67,7 @@ class DataManager(object):
     def _img_to_numpy_array(self, folder_path, output_shape, save_folder_path, db_name, size=5000, flatten=False):
         t = ImageTransformer()
         t.configure(output_shape)
-        for chunk in t.transform_all(folder_path, grey_scale=True, batch_size=size, multi_thread=True, flatten=flatten):
+        for chunk in t.transform_all(folder_path, grey_scale=False, batch_size=size, multi_thread=True, flatten=flatten):
             if self.encoder:
                 ret = self.encoder.encode(chunk)
             else:
