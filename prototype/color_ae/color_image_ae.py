@@ -17,7 +17,7 @@ c_1000_128   # for testing
 c_2000_1000_300
 '''
 
-model_config = c_2000_1000_300
+model_config = c_2000_1000
 model_folder_name = model_config['name']
 # model_folder_name = '_shape_'.join([model_config['name'], '_'.join([str(x) for x in output_shape])])
 # model_folder_name = '_'.join([model_folder_name, activation_1])

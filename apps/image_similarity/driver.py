@@ -37,7 +37,7 @@ def InitApp():
     encoder.load(model_path, model_name)
 
 
-    mode = ['avg', 'max', 'min'][1]
+    mode = ['avg', 'max', 'min']
     print('mode:',mode)
     t = ImageTransformer()
     t.configure(output_shape=output_shape)
@@ -56,7 +56,7 @@ def InitApp():
     # Perform kNN
     # =================================
     print("Performing kNN to locate nearby items to user centroid points...")
-    n_neighbors = 3  # number of nearest neighbours
+    n_neighbors = 5  # number of nearest neighbours
     metric = "euclidean"  # kNN metric
     algorithm = "ball_tree"  # search algorithm
 
@@ -65,7 +65,7 @@ def InitApp():
     EMB.compile(n_neighbors=n_neighbors, algorithm=algorithm, metric=metric)  # compile kNN model
     EMB.fit(train)  # fit kNN
 
-
+    model_index = 0
     # read from query folder
     query_folder = os.path.join(app_folder, 'query')
     answer_folder = os.path.join(app_folder, 'answer')
@@ -76,15 +76,23 @@ def InitApp():
                 # print(query)
                 # print(query.shape)
                 # possible improvement, change the average to weighted average, assign more weights to recent clicks
+                try:
+                    model_index = int(input('enter model index (0-2): 0.avg 1.max 2.min\n>:'))
+                except Exception as e:
+                    print(e, 're-enter')
+                    continue
+                selected_mode = mode[model_index]
                 print('mode:', mode)
-                if mode == 'avg':
+                if selected_mode == 'avg':
                     query = np.mean(query, axis=0)
-                elif mode == 'max':
+                elif selected_mode == 'max':
                     query = np.amax(query, axis=0)
-                elif mode == 'min':
+                elif selected_mode == 'min':
                     query = np.amin(query, axis=0)
                 else:
-                    raise Exception('unkown option {0}'.format(mode))
+                    print('unkown option {0}'.format(selected_mode))
+                    continue
+                # print('query vector', query)
                 distances, indices = EMB.predict(np.array([query]))  # predict
 
                 # =================================
@@ -97,7 +105,7 @@ def InitApp():
                 for i, (index, distance) in enumerate(zip(indices, distances)):
                     print("{0}: indices={1}, score={2}".format(i, index, distance))
                     answer_file_list = [dm.get_file_name(x) for x in index]
-                    # print(answer_file_list)
+                    print(answer_file_list)
                     answer_vec = t.transform_many(answer_file_list, flatten=True)
                     answer_vec = np.concatenate((answer_vec, np.array([query])))
                     print(euclidean_distances(answer_vec))
