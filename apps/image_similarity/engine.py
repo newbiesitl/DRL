@@ -54,20 +54,20 @@ class DataManager(object):
     def register_encoder(self, encoder=None):
         self.encoder = encoder
 
-    def load_raw_data(self, batch_size=5000):
+    def load_raw_data(self, batch_size=5000, flatten=False):
         self.counter = 0
         if isinstance(self.raw_db_paths, list):
             for each_folder in self.raw_db_paths:
                 self._img_to_numpy_array(each_folder, self.output_shape, self.bin_db_path, self.db_name,
-                                         batch_size)
+                                         batch_size, flatten=flatten)
         else:
             raise Exception('Unsupported format, only supports str and list (list of paths)')
         return self.vectors
 
-    def _img_to_numpy_array(self, folder_path, output_shape, save_folder_path, db_name, size=5000):
+    def _img_to_numpy_array(self, folder_path, output_shape, save_folder_path, db_name, size=5000, flatten=False):
         t = ImageTransformer()
         t.configure(output_shape)
-        for chunk in t.transform_all(folder_path, grey_scale=True, batch_size=size, multi_thread=True):
+        for chunk in t.transform_all(folder_path, grey_scale=True, batch_size=size, multi_thread=True, flatten=flatten):
             if self.encoder:
                 ret = self.encoder.encode(chunk)
             else:

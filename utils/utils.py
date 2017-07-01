@@ -67,20 +67,21 @@ class ImageTransformer(TransformerBase):
             return self.encoder.encode(ret)
         return ret
 
-    def transform_all(self, folder_name, grey_scale=True, batch_size=256, multi_thread=True):
+    def transform_all(self, folder_name, grey_scale=False, batch_size=256, multi_thread=True, flatten=False):
         if self.output_shape is None:
             raise Exception("output shape is not configured")
         if multi_thread:
             onlyfiles = [os.path.join(folder_name, f) for f in listdir(folder_name) if isfile(join(folder_name, f))]
             for chunk in chunks(onlyfiles, batch_size):
-                data = self._read_data_parallel(chunk, gray_scale=grey_scale, batch_size=batch_size)
+                data = self._read_data_parallel(chunk, gray_scale=grey_scale, batch_size=batch_size, flatten=flatten)
+
                 if self.encoder is None:
                     yield data
                 else:
                     yield self.encoder.encode(data)
 
 
-    def _read_data_parallel(self, onlyfiles, gray_scale=False, batch_size=256):
+    def _read_data_parallel(self, onlyfiles, gray_scale=False, flatten=False, batch_size=256):
         patch = zip(onlyfiles, [gray_scale]*len(onlyfiles), [self.output_shape]*len(onlyfiles))
         p = Pool(8)
         batch = p.map(ImageTransformer._read_file_worker, patch)
@@ -88,8 +89,10 @@ class ImageTransformer(TransformerBase):
         p.join()
         # nothing being removed ...
         batch = [x for x in batch if x is not None]
+        if len(batch) == 0:
+            raise FileNotFoundError("No query file found, did you add query files?")
         batch = np.array(batch)
-        if gray_scale:
+        if flatten:
             # if gray scale, flatten to 1-d array
             batch = batch.reshape((len(batch), np.prod(batch.shape[1:])))
         batch = batch.astype('float32') / 255.
@@ -99,7 +102,7 @@ class ImageTransformer(TransformerBase):
     def _read_file_worker(patch):
         file_path, gray_scale, output_shape = patch
         if file_path[-3:] not in ['jpg', 'png', 'jpeg']:
-            return
+            return None
         img = ImageTransformer._read_img(file_path, gray_scale=gray_scale)
         img = np.array(scipy.misc.imresize(img, output_shape))
         return img

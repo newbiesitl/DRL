@@ -1,7 +1,7 @@
 from utils.utils import *
 import os
 from embedding.greedy_encoding import GreedyEncoder
-from prototype.color_ae.model_config.model_config import *
+from model_configs.model_config import *
 
 
 cur_dir = os.path.dirname(__file__)
@@ -17,9 +17,10 @@ c_1000_128   # for testing
 c_2000_1000_300
 '''
 
-model_config = c_2000_1000_300_1000_2000
-model_folder_name = '_shape_'.join([model_config['name'], '_'.join([str(x) for x in output_shape])])
-model_folder_name = '_'.join([model_folder_name, activation_1])
+model_config = c_2000_1000_300
+model_folder_name = model_config['name']
+# model_folder_name = '_shape_'.join([model_config['name'], '_'.join([str(x) for x in output_shape])])
+# model_folder_name = '_'.join([model_folder_name, activation_1])
 model_name = model_config['name']
 model_folder = os.path.join(project_root, 'models', 'vision', model_folder_name)
 if not os.path.exists(model_folder):
@@ -28,7 +29,7 @@ if not os.path.exists(model_folder):
 # print(model_config)
 # exit()
 # train_model = True
-train_model = False
+train_model = True
 
 
 
@@ -37,7 +38,7 @@ t =ImageTransformer()
 t.configure(output_shape)
 data = []
 
-for dat in t.transform_all(data_folder, grey_scale=False, batch_size=5000 if train_model is False else 50000):
+for dat in t.transform_all(data_folder, grey_scale=False, batch_size=5000 if train_model is False else 50000, flatten=True):
     data = dat # get the first batch from generator
     break
 divider = int(len(data)*0.9)
