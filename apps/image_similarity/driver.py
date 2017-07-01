@@ -6,7 +6,7 @@ from alg.EKNN import EmbeddingkNN
 from sklearn.metrics.pairwise import euclidean_distances
 import numpy as np
 import shutil
-
+from model_config import model_config
 
 '''
 TODO @Charles
@@ -27,11 +27,11 @@ def InitApp():
         os.path.join(raw_db_folder, 'women')
     ]
     model_name = '4000_2000_1000'
-    model_path = os.path.join(app_folder, 'models', model_name)
+    model_path = os.path.join(project_root, 'models', 'vision', model_name)
 
     config = {
         'bin_db_path': bin_db_folder,
-        'output_shape': (60,40),
+        'output_shape': model_config.output_shape,
         'db_name': 'fashion50K_embedding',
         'raw_db_paths': raw_data_paths
     }
