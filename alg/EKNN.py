@@ -15,7 +15,7 @@ class EmbeddingkNN():
         self.n_test = None
         self.encode_dim = None
 
-        # Parameters for kNN model
+        # Parameters for kNN models
         self.n_neighbours = None
         self.algorithm = None
         self.metric = None

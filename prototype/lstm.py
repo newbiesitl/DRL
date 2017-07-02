@@ -31,7 +31,7 @@ model.add(LSTM(32, return_sequences=True,
                input_shape=(timesteps, data_dim)))  # returns a sequence of vectors of dimension 32
 model.add(LSTM(32, return_sequences=True))  # returns a sequence of vectors of dimension 32
 model.add(LSTM(32, return_sequences=False))  # return a single vector of dimension 32
-# model.add(LSTM(num_classes, return_sequences=True, activation='softmax'))  # return a single vector of dimension 32
+# models.add(LSTM(num_classes, return_sequences=True, activation='softmax'))  # return a single vector of dimension 32
 model.add(Dense(num_classes, activation='softmax'))
 
 model.compile(loss='categorical_crossentropy',

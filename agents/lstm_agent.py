@@ -32,14 +32,14 @@ class LSTMAgent(object):
         self.label = label
         self.memory = pad_sequences([[[0 for _ in range(self.data_dim)]]], maxlen=self.timesteps, padding='pre')[0]
         # this Q function predict accumulative reward from state and action Q(s,a)
-        # regression model output unbounded / normalized score
+        # regression models output unbounded / normalized score
         # expected input data shape: (batch_size, timesteps, data_dim)
         self.model = Sequential()
         self.model.add(LSTM(hidden_dim, return_sequences=True,
                        input_shape=(self.timesteps, self.data_dim)))  # returns a sequence of vectors of dimension 32
-        # model.add(LSTM(32, return_sequences=True))  # returns a sequence of vectors of dimension 32
+        # models.add(LSTM(32, return_sequences=True))  # returns a sequence of vectors of dimension 32
         self.model.add(LSTM(hidden_dim, return_sequences=False))  # return a single vector of dimension 32
-        # model.add(LSTM(num_classes, return_sequences=True, activation='softmax'))  # return a single vector of dimension 32
+        # models.add(LSTM(num_classes, return_sequences=True, activation='softmax'))  # return a single vector of dimension 32
         self.model.add(Dense(1, activation='linear'))
         self.discount = discount_factor
         self.loss_function = loss_function
@@ -194,7 +194,7 @@ class LSTMAgent(object):
         #     action_history.append(action)
         #
         #     # what i'm doing here is to store the episode until the end
-        #     # when episode finish update the model with entire episode with eligibility trace and discount
+        #     # when episode finish update the models with entire episode with eligibility trace and discount
         #     episodes.append([pre_observation, action])
         #     rewards.append(reward)
         #     self.update_memory(pre_observation, self._get_action_onehot(action))
@@ -245,7 +245,7 @@ class LSTMAgent(object):
             try:
                 self.load(folder_to_save, self.label)
             except FileNotFoundError:
-                print('No saved file found, have you created the model yet? Loading is ignored, start with new model.')
+                print('No saved file found, have you created the models yet? Loading is ignored, start with new models.')
         self.train_all = train_all
         self.discount = discount
         episode = 0
@@ -277,7 +277,7 @@ class LSTMAgent(object):
                 action_history.append(action)
 
                 # what i'm doing here is to store the episode until the end
-                # when episode finish update the model with entire episode with eligibility trace and discount
+                # when episode finish update the models with entire episode with eligibility trace and discount
                 episodes.append([pre_observation, action])
                 rewards.append(reward)
                 self.update_memory(pre_observation, self._get_action_onehot(action))
@@ -321,10 +321,10 @@ class LSTMAgent(object):
         json_file = open(arch_file, 'r+')  # read architecture json
         autoencoder_json = json_file.read()
         json_file.close()
-        self.model = model_from_json(autoencoder_json)  # convert json -> model architecture
-        self.model.load_weights(weights_file)  # load model weights
-        self.model_input_shape = self.model.input_shape  # set input shape from loaded model
-        self.model_output_shape = self.model.output_shape  # set output shape from loaded model
+        self.model = model_from_json(autoencoder_json)  # convert json -> models architecture
+        self.model.load_weights(weights_file)  # load models weights
+        self.model_input_shape = self.model.input_shape  # set input shape from loaded models
+        self.model_output_shape = self.model.output_shape  # set output shape from loaded models
         self.model.compile(loss=self.loss_function,
                           optimizer='adam',
                           metrics=[self.loss_function],
@@ -337,7 +337,7 @@ class LSTMAgent(object):
     def save(self, folder_path, model_name):
         arch_file = os.path.join(folder_path, '.'.join(['_'.join([model_name, 'arch']), 'json']))
         weights_file = os.path.join(folder_path, '.'.join(['_'.join([model_name, 'weights']), 'json']))
-        # Save autoencoder model arch + weights
+        # Save autoencoder models arch + weights
         with open(arch_file, "w+") as json_file:
             json_file.write(self.model.to_json())  # arch: json format
         self.model.save_weights(weights_file)  # weights: hdf5 format

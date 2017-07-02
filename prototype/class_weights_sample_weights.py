@@ -19,7 +19,7 @@ weights_mask = np.array([1, 1])
 # print(np.random.normal())
 # exit()
 # weights_mask = np.array([1])
-# model.fit(x,y, epochs=1000, sample_weight=weights_mask, class_weight=class_weights, validation_data=((x,y)))
+# models.fit(x,y, epochs=1000, sample_weight=weights_mask, class_weight=class_weights, validation_data=((x,y)))
 for _ in range(300):
     class_weights = {
         0: np.random.uniform(0, 1),
