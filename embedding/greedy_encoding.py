@@ -198,9 +198,9 @@ class AutoEncoder(EmbeddingBase):
         decoder_arch_file = os.path.join(folder_path, '.'.join(['_'.join([model_name, 'decoder']), 'json']))
         decoder_weights_file = os.path.join(folder_path, '.'.join(['_'.join([model_name, 'decoder']), 'h5']))
         encoder_decoder_arch_file = os.path.join(folder_path,
-                                                 '.'.join(['_'.join([model_name, 'encoder_decoder']), 'json']))
+                                                 '.'.join(['_'.join([model_name, 'ae']), 'json']))
         encoder_decoder_weights_file = os.path.join(folder_path,
-                                                    '.'.join(['_'.join([model_name, 'encoder_decoder']), 'h5']))
+                                                    '.'.join(['_'.join([model_name, 'ae']), 'h5']))
         try:
             # Load autoencoder architecture + weights + shapes
             json_file = open(encoder_decoder_arch_file, 'r')  # read architecture json
@@ -234,7 +234,7 @@ class AutoEncoder(EmbeddingBase):
             self.decoder_output_shape = self.decoder.output_shape  # set output shape from loaded model
 
         except FileNotFoundError:
-            print('Auto-encoder file not found, ignore decoder...')
+            print('Decoder file not found, ignore decoder...')
 
 
     def save(self, folder_path, model_name):

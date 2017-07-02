@@ -23,7 +23,7 @@ def InitApp():
         os.path.join(raw_db_folder, 'women'),
         # os.path.join(raw_db_folder, 'toy'),
     ]
-    model_name = 'bn_conv_h_2000'
+    model_name = 'bn_conv_h_200'
     model_path = os.path.join(project_root, 'models', 'vision', model_name)
 
     config = {
@@ -48,7 +48,7 @@ def InitApp():
     '''
         RUN `load_raw_data` if first time
     '''
-    train = dm.load_raw_data(batch_size=5000, flatten=True)
+    train = dm.load_raw_data(batch_size=5000, flatten=False)
     # train = dm.load_dataset()
     dm.build_mapping()
 
@@ -71,7 +71,7 @@ def InitApp():
     answer_folder = os.path.join(app_folder, 'answer')
     while True:
         try:
-            for batch in t.transform_all(query_folder, grey_scale=False, flatten=True):
+            for batch in t.transform_all(query_folder, grey_scale=False, flatten=False):
                 query = batch
                 # print(query)
                 # print(query.shape)
