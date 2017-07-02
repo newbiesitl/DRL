@@ -5,7 +5,7 @@ sys.path.append(project_root)
 
 
 from utils.utils import ImageTransformer
-from embedding.greedy_encoding import GreedyEncoder
+from embedding.greedy_encoding import AutoEncoder
 import numpy as np
 from utils.utils import visualize_result_ae, visualize_result_encode_decode
 from embedding.model_config import *
@@ -27,7 +27,7 @@ def main():
     # configure the transformer
     t.configure(output_shape)
 
-    ae = GreedyEncoder(verbose=True)
+    ae = AutoEncoder(verbose=True)
     data = None
     for batch in t.transform_all(data_path, batch_size=training_set_size):
         print('read data...', end='')

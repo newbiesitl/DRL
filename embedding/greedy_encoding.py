@@ -5,7 +5,7 @@ from keras.layers.noise import AlphaDropout
 import os
 import numpy as np
 
-class GreedyEncoder(EmbeddingBase):
+class AutoEncoder(EmbeddingBase):
     def __init__(self, verbose=False):
         self.verbose = verbose
         self._x_test_set = None
@@ -194,12 +194,14 @@ class GreedyEncoder(EmbeddingBase):
 
     def load(self, folder_path, model_name):
         encoder_arch_file = os.path.join(folder_path, '.'.join(['_'.join([model_name, 'encoder']), 'json']))
-        encoder_weights_file = os.path.join(folder_path, '.'.join(['_'.join([model_name, 'encoder']), 'hdf5']))
+        encoder_weights_file = os.path.join(folder_path, '.'.join(['_'.join([model_name, 'encoder']), 'h5']))
         decoder_arch_file = os.path.join(folder_path, '.'.join(['_'.join([model_name, 'decoder']), 'json']))
-        decoder_weights_file = os.path.join(folder_path, '.'.join(['_'.join([model_name, 'decoder']), 'hdf5']))
+        decoder_weights_file = os.path.join(folder_path, '.'.join(['_'.join([model_name, 'decoder']), 'h5']))
+        encoder_decoder_arch_file = os.path.join(folder_path,
+                                                 '.'.join(['_'.join([model_name, 'encoder_decoder']), 'json']))
+        encoder_decoder_weights_file = os.path.join(folder_path,
+                                                    '.'.join(['_'.join([model_name, 'encoder_decoder']), 'h5']))
         try:
-            encoder_decoder_arch_file = os.path.join(folder_path, '.'.join(['_'.join([model_name, 'encoder_decoder']), 'json']))
-            encoder_decoder_weights_file = os.path.join(folder_path, '.'.join(['_'.join([model_name, 'encoder_decoder']), 'hdf5']))
             # Load autoencoder architecture + weights + shapes
             json_file = open(encoder_decoder_arch_file, 'r')  # read architecture json
             autoencoder_json = json_file.read()
@@ -210,6 +212,7 @@ class GreedyEncoder(EmbeddingBase):
             self.encoder_decoder_output_shape = self.encoder_decoder.output_shape  # set output shape from loaded model
         except FileNotFoundError:
             print('Auto-encoder file not found, ignore auto-encoder...')
+
         # Load encoder architecture + weights + shapes
         json_file = open(encoder_arch_file, 'r')  # read architecture json
         encoder_json = json_file.read()
@@ -219,25 +222,28 @@ class GreedyEncoder(EmbeddingBase):
         self.encoder_input_shape = self.encoder.input_shape  # set input shape from loaded model
         self.encoder_output_shape = self.encoder.output_shape  # set output shape from loaded model
 
-        # Load decoder architecture + weights + shapes
-        json_file = open(decoder_arch_file, 'r')  # read architecture json
-        decoder_json = json_file.read()
-        json_file.close()
-        self.decoder = model_from_json(decoder_json)  # convert json -> model architecture
-        self.decoder.load_weights(decoder_weights_file)  # load model weights
-        self.decoder_input_shape = self.decoder.input_shape  # set input shape from loaded model
-        self.decoder_output_shape = self.decoder.output_shape  # set output shape from loaded model
+        try:
 
+            # Load decoder architecture + weights + shapes
+            json_file = open(decoder_arch_file, 'r')  # read architecture json
+            decoder_json = json_file.read()
+            json_file.close()
+            self.decoder = model_from_json(decoder_json)  # convert json -> model architecture
+            self.decoder.load_weights(decoder_weights_file)  # load model weights
+            self.decoder_input_shape = self.decoder.input_shape  # set input shape from loaded model
+            self.decoder_output_shape = self.decoder.output_shape  # set output shape from loaded model
 
+        except FileNotFoundError:
+            print('Auto-encoder file not found, ignore decoder...')
 
 
     def save(self, folder_path, model_name):
         encoder_arch_file = os.path.join(folder_path, '.'.join(['_'.join([model_name, 'encoder']), 'json']))
-        encoder_weights_file = os.path.join(folder_path, '.'.join(['_'.join([model_name, 'encoder']), 'hdf5']))
+        encoder_weights_file = os.path.join(folder_path, '.'.join(['_'.join([model_name, 'encoder']), 'h5']))
         decoder_arch_file = os.path.join(folder_path, '.'.join(['_'.join([model_name, 'decoder']), 'json']))
-        decoder_weights_file = os.path.join(folder_path, '.'.join(['_'.join([model_name, 'decoder']), 'hdf5']))
-        encoder_decoder_arch_file = os.path.join(folder_path, '.'.join(['_'.join([model_name, 'encoder_decoder']), 'json']))
-        encoder_decoder_weights_file = os.path.join(folder_path, '.'.join(['_'.join([model_name, 'encoder_decoder']), 'hdf5']))
+        decoder_weights_file = os.path.join(folder_path, '.'.join(['_'.join([model_name, 'decoder']), 'h5']))
+        encoder_decoder_arch_file = os.path.join(folder_path, '.'.join(['_'.join([model_name, 'ae']), 'json']))
+        encoder_decoder_weights_file = os.path.join(folder_path, '.'.join(['_'.join([model_name, 'ae']), 'h5']))
         # Save autoencoder model arch + weights
         with open(encoder_decoder_arch_file, "w+") as json_file:
             json_file.write(self.encoder_decoder.to_json())  # arch: json format

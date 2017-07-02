@@ -1,12 +1,12 @@
 import os
 from apps.image_similarity.engine import DataManager
-from embedding.greedy_encoding import GreedyEncoder
+from embedding.greedy_encoding import AutoEncoder
 from utils.utils import ImageTransformer
 from alg.EKNN import EmbeddingkNN
 from sklearn.metrics.pairwise import euclidean_distances
 import numpy as np
 import shutil
-from model_configs.ae import *
+from model_configs.conv import *
 
 
 
@@ -23,7 +23,7 @@ def InitApp():
         os.path.join(raw_db_folder, 'women'),
         # os.path.join(raw_db_folder, 'toy'),
     ]
-    model_name = 'c_2000_1000_300'
+    model_name = 'bn_conv_h_2000'
     model_path = os.path.join(project_root, 'models', 'vision', model_name)
 
     config = {
@@ -33,7 +33,7 @@ def InitApp():
         'raw_db_paths': raw_data_paths
     }
     # Initialize encoder
-    encoder = GreedyEncoder()
+    encoder = AutoEncoder()
     encoder.load(model_path, model_name)
 
 

@@ -1,6 +1,6 @@
 from utils.utils import *
 import os
-from embedding.greedy_encoding import GreedyEncoder
+from embedding.greedy_encoding import AutoEncoder
 from model_configs.ae import *
 
 
@@ -33,7 +33,7 @@ train_model = False
 
 
 
-ae = GreedyEncoder(verbose=True)
+ae = AutoEncoder(verbose=True)
 t =ImageTransformer()
 t.configure(output_shape)
 data = []
