@@ -21,9 +21,9 @@ try:
     shutil.rmtree(tensor_board_path)
 except:
     pass
-train_model = False
+train_model = True
 model_folder = os.path.join(project_root, 'models', 'vision')
-model_name = 'bn_conv_all'
+model_name = 'bn_conv_all_with_embedding_layer'
 t =ImageTransformer()
 t.configure(input_shape)
 train = None
@@ -73,6 +73,10 @@ if train_model:
     if use_dropout:
         ae.add(Dropout(0.5))
     x = MaxPooling2D((2, 2))
+    ae.add(x)
+
+    # add the dense layer
+    x = Dense(500, activation='sigmoid')
     ae.add(x)
 
     x = Conv2D(64, (3, 3), activation=activation_1, padding='same')
