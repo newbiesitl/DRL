@@ -39,7 +39,7 @@ def roll_out(corpus, AE, batch_size=1000):
     return ds
 for each in roll_out(sentences, None):
     pass
-exit()
+
 from gensim.models.word2vec import Word2Vec
 
 w2v = Word2Vec.load_word2vec_format(model_path)

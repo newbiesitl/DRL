@@ -74,11 +74,11 @@ class ImageTransformer(TransformerBase):
             onlyfiles = [os.path.join(folder_name, f) for f in listdir(folder_name) if isfile(join(folder_name, f))]
             for chunk in chunks(onlyfiles, batch_size):
                 data = self._read_data_parallel(chunk, gray_scale=grey_scale, batch_size=batch_size, flatten=flatten)
-
                 if self.encoder is None:
                     yield data
                 else:
-                    yield self.encoder.encode(data)
+                    ret = self.encoder.encode(data)
+                    yield ret
 
 
     def _read_data_parallel(self, onlyfiles, gray_scale=False, flatten=False, batch_size=256):

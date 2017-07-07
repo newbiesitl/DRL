@@ -19,7 +19,6 @@ for dat in t.transform_all(data_folder, grey_scale=False, batch_size=10 if not t
     break
 
 
-exit()
 
 input_dim = output_shape[0] * output_shape[1]
 output_dim = input_dim

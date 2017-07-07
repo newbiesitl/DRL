@@ -53,6 +53,7 @@ class DataManager(object):
 
     def register_encoder(self, encoder=None):
         self.encoder = encoder
+        # print(self.encoder, 'checked, the self.encoder is registered')
 
     def load_raw_data(self, batch_size=5000, flatten=False):
         self.counter = 0

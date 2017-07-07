@@ -6,7 +6,7 @@ from alg.EKNN import EmbeddingkNN
 from sklearn.metrics.pairwise import euclidean_distances
 import numpy as np
 import shutil
-from model_configs.conv import *
+from model_configs.ae import *
 
 
 
@@ -23,7 +23,7 @@ def InitApp():
         os.path.join(raw_db_folder, 'women'),
         # os.path.join(raw_db_folder, 'toy'),
     ]
-    model_name = 'bn_conv_h_200'
+    model_name = 'simpleAE__women__rgb_resized'
     model_path = os.path.join(project_root, 'models', 'vision', model_name)
 
     config = {
@@ -36,7 +36,6 @@ def InitApp():
     encoder = AutoEncoder()
     encoder.load(model_path, model_name)
 
-
     mode = ['avg', 'max', 'min']
     print('mode:',mode)
     t = ImageTransformer()
@@ -48,7 +47,8 @@ def InitApp():
     '''
         RUN `load_raw_data` if first time
     '''
-    train = dm.load_raw_data(batch_size=5000, flatten=False)
+    train = dm.load_raw_data(batch_size=5000, flatten=True)
+    print(train.shape)
     # train = dm.load_dataset()
     dm.build_mapping()
 
@@ -60,21 +60,20 @@ def InitApp():
     metric = "euclidean"  # kNN metric
     algorithm = "ball_tree"  # search algorithm
 
+    print(train.shape)
     EMB = EmbeddingkNN()  # initialize embedding kNN class
     # Compile and train model
     EMB.compile(n_neighbors=n_neighbors, algorithm=algorithm, metric=metric)  # compile kNN model
     EMB.fit(train)  # fit kNN
 
-    model_index = 0
     # read from query folder
     query_folder = os.path.join(app_folder, 'query')
     answer_folder = os.path.join(app_folder, 'answer')
     while True:
         try:
-            for batch in t.transform_all(query_folder, grey_scale=False, flatten=False):
+            for batch in t.transform_all(query_folder, grey_scale=False, flatten=True):
                 query = batch
                 # print(query)
-                # print(query.shape)
                 # possible improvement, change the average to weighted average, assign more weights to recent clicks
                 try:
                     model_index = int(input('enter model index (0-2): 0.avg 1.max 2.min\n>:'))
@@ -105,10 +104,10 @@ def InitApp():
                 for i, (index, distance) in enumerate(zip(indices, distances)):
                     print("{0}: indices={1}, score={2}".format(i, index, distance))
                     answer_file_list = [dm.get_file_name(x) for x in index]
-                    print(answer_file_list)
+                    # print(answer_file_list)
                     answer_vec = t.transform_many(answer_file_list, flatten=True)
                     answer_vec = np.concatenate((answer_vec, np.array([query])))
-                    print(euclidean_distances(answer_vec))
+                    # print(euclidean_distances(answer_vec))
                     for answer_file in answer_file_list:
                         shutil.copy(answer_file, os.path.join(answer_folder, str(dm.get_index(answer_file))+'.jpg'))
         except FileNotFoundError:
