@@ -15,6 +15,13 @@ def stats(nums):
     print(avg, var)
 
 
+
+
+'''
+The conclusion is better prior requires less trails to converge.
+Worse prior requires more trails to converge.
+'''
+
 successes = 3
 trials = 9
 # alpha, beta defines the shape of beta dist, success and trials is number of experiments.
