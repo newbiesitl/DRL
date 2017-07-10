@@ -1,5 +1,6 @@
 from scipy.stats import beta
-
+from matplotlib import pyplot as plt
+import numpy as np
 
 def samples(a, b, success, trials, num_episodes=100):
     dist = beta(a+success, b+trials-success)
@@ -14,6 +15,16 @@ def stats(nums):
     )
     print(avg, var)
 
+def plots(data, bin_size=20):
+    bins = np.arange(0, bin_size, 1) # fixed bin size
+    bins = bins/bin_size # normalize bins
+    num_plots = len(data)
+    for i, nums in enumerate(data):
+        plt.subplot(num_plots, 1, i+1)
+        # plot histogram
+        plt.hist(nums, bins=bins, alpha=0.5)
+
+    plt.show()
 
 
 
@@ -23,24 +34,34 @@ Worse prior requires more trails to converge.
 '''
 
 successes = 3
-trials = 9
+trials =10
 # alpha, beta defines the shape of beta dist, success and trials is number of experiments.
 a, b = 1, 1  # uniform
-ret = samples(a, b, successes, trials, num_episodes=100)
+num_episodes = 200
+bin_size = 40
+container = []
+ret = samples(a, b, successes, trials, num_episodes=num_episodes)
+container.append(ret)
 stats(ret)
 
 a, b = 0.5, 0.5  # convex shape prior
-ret = samples(a, b, successes, trials, num_episodes=100)
+ret = samples(a, b, successes, trials, num_episodes=num_episodes)
+container.append(ret)
 stats(ret)
 
 a, b = 1.1, 30  # 0-0.2 prior
-ret = samples(a, b, successes, trials, num_episodes=100)
+ret = samples(a, b, successes, trials, num_episodes=num_episodes)
+container.append(ret)
 stats(ret)
 
 a, b = 2, 5  # .0-0.8 prior
-ret = samples(a, b, successes, trials, num_episodes=100)
+ret = samples(a, b, successes, trials, num_episodes=num_episodes)
+container.append(ret)
 stats(ret)
 
 a, b = 2, 2  # bell shape between 0,1
-ret = samples(a, b, successes, trials, num_episodes=100)
+ret = samples(a, b, successes, trials, num_episodes=num_episodes)
+container.append(ret)
 stats(ret)
+
+plots(container, bin_size=bin_size)
