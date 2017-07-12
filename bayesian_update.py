@@ -3,6 +3,15 @@ from matplotlib import pyplot as plt
 import numpy as np
 
 def samples(a, b, success, trials, num_episodes=100):
+    '''
+
+    :param a: the shape param for prior dist
+    :param b: the shape param for prior dist
+    :param success: num success in the experiments
+    :param trials:  num trails conducted
+    :param num_episodes:  num samples to draw from this distribution
+    :return:
+    '''
     dist = beta(a+success, b+trials-success)
     episodes = num_episodes
     nums = [dist.rvs() for _ in range(episodes)]
@@ -23,6 +32,7 @@ def plots(data, bin_size=20):
         plt.subplot(num_plots, 1, i+1)
         # plot histogram
         plt.hist(nums, bins=bins, alpha=0.5)
+        # hist = np.histogram(nums, bin_size)
 
     plt.show()
 
@@ -37,8 +47,8 @@ successes = 3
 trials =10
 # alpha, beta defines the shape of beta dist, success and trials is number of experiments.
 a, b = 1, 1  # uniform
-num_episodes = 200
-bin_size = 40
+num_episodes = 2000 # num samples sampled from distribution in order to draw distribution
+bin_size = 100
 container = []
 ret = samples(a, b, successes, trials, num_episodes=num_episodes)
 container.append(ret)
