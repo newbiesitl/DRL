@@ -15,6 +15,18 @@ print(model_path)
 
 
 
+
+'''
+For a Sequential model, you can get the layers by index:
+
+    weights = model.layers[5].get_weights()
+
+Or by name, if all your layers are named;
+
+    layer_dict = dict([(layer.name, layer) for layer in model.layers])
+    weights = layer_dict['some_name'].get_weights()
+'''
+
 sentences = [
     'cat food poo',
     'dog cat'
@@ -57,6 +69,4 @@ AE.add(h)
 encoder.add(h)
 o = Dense(w2v.vector_size*2, activation=sigmoid)
 AE.add(o)
-print('abb')
 roll_out(sentences, AE)
-print('aa')

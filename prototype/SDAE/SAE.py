@@ -13,7 +13,6 @@ class SequentialAE(object):
         encoder = Sequential()
         decoder = Sequential()
         encode_input = Dense(input_dim, input_shape=(input_dim*2,))
-        decode_input = Dense(input_dim*2, input_shape=(input_dim,))
         decode = Dense(input_dim*2, activation='linear')
         # auto encoder
         ae.add(encode_input)
